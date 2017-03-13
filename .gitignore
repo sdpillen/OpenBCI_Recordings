@@ -1,0 +1,12 @@
+# Command for removing added files:
+#       git rm -r --cached .
+*.pyc
+*.idea
+*.p
+*.pickle
+*.xml
+*.iml
+
+##################
+# Specific files
+##################

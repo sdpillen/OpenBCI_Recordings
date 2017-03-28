@@ -18,20 +18,20 @@ def load_yaml_file(config_file_path):
     return d
 
 
-def save_yaml_file(yaml_file_path, data):
+def save_yaml_file(yaml_file_path, data, default_flow_style=True):
     """
     Gets a configuration dictionary for this experiment
     """
     with open(yaml_file_path, 'w') as outfile:
-        yaml.dump(data, outfile, default_flow_style=True)
+        yaml.dump(data, outfile, default_flow_style)
 
 
-def save_pickle_file(pickle_file_path, data):
+def save_pickle_file(pickle_file_path, data, protocol=pickle.HIGHEST_PROTOCOL):
     """
     Save a pickle file in binary mode
     """
     with open(pickle_file_path, 'wb') as fp:
-        pickle.dump(data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(data, fp, protocol)
 
 
 def load_pickle_file(pickle_file_path, binary=True):

@@ -1,6 +1,5 @@
 import yaml
 import pickle
-import json
 import os
 import argparse
 import numpy as np
@@ -8,6 +7,7 @@ import AssertVal as AV
 import time
 import bisect
 import ast
+
 
 def load_yaml_file(config_file_path):
     """
@@ -72,7 +72,7 @@ def remove_data_file_training_comma(file_path, save_path, header_size=6):
                     w.write(line)
 
 
-def downsample_from_500_to_250_hz(file_path, save_path, header_size=0):
+def downsample_by_factor_of_2(file_path, save_path, header_size=0):
     """
     Down samples brain amp samples at (5000; downsampled to 500) 500 Hz to 250 hz
     :param file_path: Path to file to be downsampled
@@ -95,7 +95,7 @@ def downsample_from_500_to_250_hz(file_path, save_path, header_size=0):
 def strip_comma_and_downsample_from_500_to_250_hz(file_path, save_path, header_size=6):
     temp_file_name = '/tmp/temp_file_downsample_comma.txt'
     remove_data_file_training_comma(file_path, temp_file_name, header_size)
-    downsample_from_500_to_250_hz(temp_file_name, save_path, header_size=0)
+    downsample_by_factor_of_2(temp_file_name, save_path, header_size=0)
     os.remove('/tmp/temp_file_downsample_comma.txt')
 
 
@@ -180,6 +180,27 @@ def load_ast_dictionary_by_trial(file_path, header_size=0, record_header=True):
                     else:
                         trial_list.append(ast.literal_eval(line))
     return trial_list, header_list
+
+
+def gen_readme_file(readme_file_path, experiment_name, simple_subject_number, condition, tms_experiment_tracker_number, tms_subject_tracker_number):
+    """
+    Gens a readme file for readme_file_path that includes the passed information
+    :return: None
+    """
+    with open(readme_file_path, 'r') as f:
+        # a bit redundant but whatever....
+        readme_dict = {'Experiment Name' : experiment_name,
+                       'Subject Number' : str(simple_subject_number),
+                       'Experimental Condition' : str(condition),
+                       'Experiment Tracking Number' : str(tms_experiment_tracker_number),
+                       'Subject Tracking Number' : str(tms_subject_tracker_number)}
+
+        f.write('\n'.join([str(readme_dict),  # Use ast literal eval to extract below info.
+                           'Experiment Name' + str(experiment_name),
+                           'Subject Number' + str(simple_subject_number),
+                           'Experimental Condition' + str(condition),
+                           'Experiment Tracking Number' + str(tms_experiment_tracker_number),
+                           'Subject Tracking Number' + str(tms_subject_tracker_number)]))
 
 
 if __name__ == '__main__':

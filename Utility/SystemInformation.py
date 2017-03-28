@@ -1,4 +1,3 @@
-__author__ = 'Darby'
 import platform
 
 
@@ -13,6 +12,5 @@ def is_windows():
 def get_os_type():
     """
     returns 'windows' or 'linux' depending which os you're running.
-    :return:
     """
     return platform.system().lower()

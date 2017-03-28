@@ -1,5 +1,4 @@
 import OpenBCIHardwareInterface as BciHwInter
-import BCIVars
 import time
 import Utility.SystemInformation as SystemInfo
 

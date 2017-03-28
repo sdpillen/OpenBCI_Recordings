@@ -9,27 +9,43 @@ related to signal processing, visualization, stimuli display, tms triggering and
 
 Files saved using this module will obey the format:
 
-     SubjectX_condition
+     Experiment_%s_Subject%s_Condition%s_ExpTracker%s_SubjectTracker%s_Time%s
 
-     Condition:
-       _log.txt
-       _OpenBCIData.csv
-       _BrainAmpData.csv
+     %s represents a string (usually a number)
 
+
+     File Format can be one of the following:
+       log.txt
+       OpenBCIData.csv
+       BrainAmpData.csv
+
+A standard data path will take the form:
+
+    \path_to_experiment_data_folder\experiment_subject_condition_time\file_name
+
+See the various EEG Sections for information about standard data storage for eeg data.
 
 ## Open BCI
 
-Dongle: Switch toward computer
-Board: Switch toward PC.
+##### Equipment Instructions
+The dongle and board also have different settings.  For standard data collection, insure that the
+switches on the side are set properly:
 
-Every time the program is run you must:
+    Dongle: Switch toward computer
+    Board: Switch toward PC.
 
-    1. Unplug the dongle and turn off the board
-    2. Plug in the dongle
-    3. Turn on the board.
+##### Known Errors
+The OpenBCI board will not run properly the second time it starts unless
+it is physically reset between runs.  Therefore, every time the program is run you must:
+
+   1. Unplug the dongle and turn off the board
+   2. Plug in the dongle
+   3. Turn on the board.
+
+See the "Error Messages" section below to see markers of this error.
 
 
-## Open BCI Data montage
+##### Standard Open BCI Data montage
 
     Chan1 - Oz
     Chan2 - P4
@@ -43,15 +59,13 @@ Every time the program is run you must:
 ## Data Format
 
 ### Epoched Data
+
 With the exception of the SentComp data (which has an nonuniform structure), all data is saved as a python pickle file.
 Data is a numpy array of the format (epoch, sample, channel). Epoched data is saved in the format described in the FilePlayback
 section below. This is not the only standard I have used (but it is the final standard I decided on).  Because of this,
-there are other pickle files saved in various other formats.  **Files that contain FilePlayback in their name should be considered the
-'final draft' of the epoched data.**
+there are other pickle files saved in various other formats.  **Files that contain FilePlayback in their name should be considered the 'final draft' of the epoched data.**
 
-To load pickle files, call:
 
-    Utility.FileParser.load_pickle_file(pickle_file_path)
 
 ### Raw Data
 
@@ -90,28 +104,28 @@ For file playback, all data must be a pickle file the following format:
             labels['raw_labels'] -> list of raw labels.
 
 This is the standard data formatting for all uniform data. The scripts to create these files are in the
-preprocessing folder.
+pre-processing folder.
 
 Not all files have all keys listed.
-
-
-
-## Online Classification
-
-Online classification works by collecting data offline and building a model on that data. This model is used
-in an online platform to make predictions about mental state.
 
 ## Naming Conventions
 
 
-    data_dur_path = path data is stored
-    subject_dur_path = path to subject folder (in data folder)
+    data_dur_path = path to directory where data is stored
+    subject_dur_path = path to subject folder (in data_dur_path)
     ..._file_path = path to file
 
-## Utility
+## Common Code
 
 ##### Assert Statements:
-    import Utility.AssertVal as AV
+    import DLUtil.Utility.AssertVal as AV
+
+##### Pickle Files
+
+To load pickle files, call:
+
+    import DLUtil.Utility.FileParser as FP
+    FP.load_pickle_file(pickle_file_path)
 
 ## Error Messages
 
@@ -146,6 +160,18 @@ This provides a very long, complicated error message.  The portion shown below i
     Warning: ID:<15> <Unexpected END_BYTE found <0> instead of <192>
     WARNING:root:Skipped 466 bytes before start found
     'NoneType' object has no attribute 'channel_data' 'NoneType' object has no attribute 'channel_data'
+
+## Git
+
+#### Common commands
+
+###### How to make git ignore about previously tracked file:
+
+
+     git rm --cached -r .
+     git add .
+
+http://stackoverflow.com/questions/1274057/how-to-make-git-forget-about-a-file-that-was-tracked-but-is-now-in-gitignore
 
 ## Dependencies
 Runs with python 2.7

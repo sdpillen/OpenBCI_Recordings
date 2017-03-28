@@ -23,7 +23,7 @@ def assert_greater_or_equal(val_greater, val_less):
 def assert_epoch_label_shape(epoched_values, labels, message="The number of epochs between the density and labels do not match"):
     """
     Asserts that the number of epochs in the density has the same length as the labels
-    :param epoched_values: numpy array - epoched values where the first dimension is the epoch
+    :param epoched_values: numpy array - epoched values where the first dimension is the number of epoch (such as density)
     :param labels: labels - list or 1D np array
     :param message: Message to show if assertion fails.
     """

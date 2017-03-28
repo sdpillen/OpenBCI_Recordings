@@ -6,7 +6,7 @@
 *.pickle
 *.xml
 *.iml
-
+*.jar
 ##################
 # Specific files
 ##################

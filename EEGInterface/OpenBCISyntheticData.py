@@ -1,6 +1,5 @@
 import OpenBCIStreamer
 import OpenBCIHardwareInterface as HardwareInterface
-import BCIVars
 import time
 import random
 

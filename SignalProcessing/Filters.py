@@ -1,5 +1,4 @@
 import scipy.signal as scisig
-from scipy.fftpack import rfft, irfft, fftfreq
 
 
 class Butter(object):
@@ -34,15 +33,3 @@ class Butter(object):
         """
         b, a = Butter.butter_bandpass(low, high, fs, order=order)
         return scisig.lfilter(b, a, data)
-
-
-def filter_noise(signal, fs):
-    W = fftfreq(len(signal), d=1.0 / fs)
-    f_signal = rfft(signal)
-    low = 5
-    f_signal[(W < low)] = 0
-    for i in range(len(f_signal)):
-        if 3 < W[i] < 65 or W[i] < low:
-            f_signal[i] = 0
-    cut_signal = irfft(f_signal)
-    return cut_signal

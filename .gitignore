@@ -7,6 +7,9 @@
 *.xml
 *.iml
 *.jar
+*pptm
+*pptx
+*ppt
 ##################
 # Specific files
 ##################

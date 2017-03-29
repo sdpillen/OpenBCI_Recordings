@@ -2,7 +2,7 @@
 This file is for saving EEG Data
 """
 
-import Utility.StringParser as StringParser
+import DataManagement.StringParser as StringParser
 
 def start_data_saving(save_data_file_path, queue, header=None):
     """

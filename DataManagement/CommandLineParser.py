@@ -1,7 +1,12 @@
+"""
+This file is for functions related to taking information from the user via the command line.
+"""
+
 import argparse
-import time
 import os
-import FileParser as FP
+import time
+
+from DataManagement import FileParser as FP
 
 
 def command_line_with_default_values(default_val_dict):

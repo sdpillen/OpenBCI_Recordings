@@ -3,21 +3,39 @@ Wrapper methods for assertions.
 """
 
 def assert_equal(val1, val2, message=''):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val1 == val2, '%s -- %s, %s' % (str(message), str(val1), str(val2))
 
 def assert_not_equal(val1, val2):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val1 != val2, '%s, %s' % (str(val1), str(val2))
 
 def assert_less(val_less, val_greater):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val_less < val_greater, '%s, %s' % (str(val_less), str(val_greater))
 
 def assert_less_or_equal(val_less, val_greater):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val_less <= val_greater, '%s, %s' % (str(val_less), str(val_greater))
 
 def assert_greater(val_greater, val_less):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val_greater > val_less, '%s, %s' % (str(val_greater), str(val_less))
 
 def assert_greater_or_equal(val_greater, val_less):
+    """
+    Runs assertion and displays values if assertion fails.
+    """
     assert val_greater >= val_less, '%s, %s' % (str(val_greater), str(val_less))
 
 def assert_epoch_label_shape(epoched_values, labels, message="The number of epochs between the density and labels do not match"):

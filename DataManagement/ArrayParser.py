@@ -1,5 +1,56 @@
+"""
+This file is for List and 1D np array Manipulations.
+
+For matrix manipulation and dict manipulation, see DataParser.py.
+"""
+
 import numpy as np
-import AssertVal
+import Utility.AssertVal as AV
+
+
+def extract_min_difference_in_list(lst):
+    """
+    Takes a list and extracts the minimum difference between consecutive items.
+    For example
+        [3, 5, 125, 23543]
+    Would return 2
+    :param lst: List of numbers to be examined. List must be in nonmonitonic ascending order
+    """
+    min_val = float('inf')
+    for index in xrange(len(lst) - 1):
+        diff = lst[index + 1] - lst[index]
+        min_val = min(diff, min_val)
+    return min_val
+
+def extract_min_difference_between_lists(lst_large, lst_small):
+    """
+    Takes a list and extracts the minimum difference between two lists.
+    For example
+        [3, 5, 125, 23543]
+        [1, 4, 120, 2354]
+    Would return 1
+    """
+    AV.assert_equal(len(lst_large), len(lst_small))
+    return min([a_i - b_i for a_i, b_i in zip(lst_large, lst_small)])
+
+def convert_ununiform_start_stop_lists_to_uniform_start_stop_lists(start_lst, stop_lst):
+    """
+    Takes a list of start indexes and a list of end indexes a returns a new end index list such that trial_dur = stop_lst[i] - start_lst[i] and trial dur is the same for
+    each list (set to the minimum trial dur contained in the list)
+    :param start_lst: list of floats denoting starts of trials
+    :param stop_lst: list of floats denoting end of trials
+    :return: new stop list
+    """
+    AV.assert_equal(len(start_lst), len(stop_lst))
+    dur = extract_min_difference_between_lists(stop_lst, start_lst)
+    return [start_lst_val + dur for start_lst_val in start_lst]
+
+def stack_lists(existing, new_list):
+    """
+    Takes existing epoch list and concats a new list to the end.
+    If existing is none, returns new list.
+    """
+    return new_list if existing is None else existing + new_list
 
 
 def convert_to_binary_labels_by_median(continous_labels):
@@ -102,5 +153,5 @@ class DictionaryProcessing(object):
 
     @staticmethod
     def two_lists_to_dict(keys, values):
-        AssertVal.assert_equal(len(keys), len(values))
+        Utility.AssertVal.assert_equal(len(keys), len(values))
         return dict(zip(keys, values))

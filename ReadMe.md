@@ -173,6 +173,17 @@ This provides a very long, complicated error message.  The portion shown below i
 
 http://stackoverflow.com/questions/1274057/how-to-make-git-forget-about-a-file-that-was-tracked-but-is-now-in-gitignore
 
+## Debugging
+
+#### Problems with the touch screen
+
+    Occasionally on restart, the touchscreen mapping will be wrong.
+    To fix:
+        1) Search and select "Tablet PC Settings"
+        2) At the top, hit configure your pent and touch displays setup
+        3) Select the correct touchscreen
+
+
 ## Dependencies
 Runs with python 2.7
 

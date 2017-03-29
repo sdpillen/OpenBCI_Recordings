@@ -1,5 +1,9 @@
+"""
+This file is for generic operations related to matrix and dictionary manipulations.
+"""
+
 import numpy as np
-import AssertVal as AV
+import Utility.AssertVal as AV
 import time
 import bisect
 import ast
@@ -31,31 +35,6 @@ def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops):
     AV.assert_equal(len(trial_stops), epoched_data.shape[0])
     return epoched_data
 
-def extract_min_difference_in_list(lst):
-    """
-    Takes a list and extracts the minimum difference between consecutive items.
-    For example
-        [3, 5, 125, 23543]
-    Would return 2
-    :param lst: List of numbers to be examined. List must be in nonmonitonic ascending order
-    """
-    min_val = float('inf')
-    for index in xrange(len(lst) - 1):
-        diff = lst[index + 1] - lst[index]
-        min_val = min(diff, min_val)
-    return min_val
-
-def extract_min_difference_between_lists(lst_large, lst_small):
-    """
-    Takes a list and extracts the minimum difference between two lists.
-    For example
-        [3, 5, 125, 23543]
-        [1, 4, 120, 2354]
-    Would return 1
-    """
-    AV.assert_equal(len(lst_large), len(lst_small))
-    return min([a_i - b_i for a_i, b_i in zip(lst_large, lst_small)])
-
 
 def extract_value_from_list_of_dicts(dictionary_list, key):
     """
@@ -66,18 +45,6 @@ def extract_value_from_list_of_dicts(dictionary_list, key):
     """
     return [dictionary[key] for dictionary in dictionary_list]
 
-def convert_ununiform_start_stop_lists_to_uniform_start_stop_lists(start_lst, stop_lst):
-    """
-    Takes a list of start indexes and a list of end indexes a returns a new end index list such that trial_dur = stop_lst[i] - start_lst[i] and trial dur is the same for
-    each list (set to the minimum trial dur contained in the list)
-    :param start_lst: list of floats denoting starts of trials
-    :param stop_lst: list of floats denoting end of trials
-    :return: new stop list
-    """
-    AV.assert_equal(len(start_lst), len(stop_lst))
-    dur = extract_min_difference_between_lists(stop_lst, start_lst)
-    return [start_lst_val + dur for start_lst_val in start_lst]
-
 
 def stack_epochs(existing, new_trial):
     """
@@ -86,12 +53,6 @@ def stack_epochs(existing, new_trial):
     """
     return new_trial if existing is None else np.concatenate((existing, new_trial), axis=0)
 
-def stack_lists(existing, new_list):
-    """
-    Takes existing epoch list and concats a new list to the end.
-    If existing is none, returns new list.
-    """
-    return new_list if existing is None else existing + new_list
 
 
 def average_density_over_epochs(density):
@@ -149,11 +110,3 @@ def trim_freqs(freqs, density, high=None, low=None):
     # Ensure each density pos has a corresponding freq.
     AV.assert_equal(len(freqs), density.shape[1])
     return freqs, density
-
-
-
-
-
-
-
-

@@ -8,7 +8,7 @@ import Utility.AssertVal as AV
 
 class NonOverlappingBuffer(object):
     """
-    A NoOverlap Buffer is a buffer that reads in data
+    A NoOverlap Buffer is a buffer that reads in data.  This is a more primitive version of the MovingWindowBuffer class.
     """
 
     def __init__(self, capacity, num_channels, buffer_queue, out_queue):

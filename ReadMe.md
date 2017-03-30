@@ -12,6 +12,7 @@ It is important that all code committed to this repository is:
            please provide docstrings (comments detailing what a function does) to every funtions written, no matter how basic.
     2) Well maintained - please only commit code that is predominantly PEP8 complient
            See https://www.python.org/dev/peps/pep-0008/ for details
+           If commiting uncompleted or untested code, please mark it with a todo comment.
     3) Generalizeable enough that it can be used for multiple projects.
             Please do not hard code constants. Instead pass them to the funcion as a default parameter.
             Please refactor functions that "do too much work".

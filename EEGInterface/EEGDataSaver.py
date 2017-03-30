@@ -4,7 +4,7 @@ This file is for saving EEG Data
 
 import DataManagement.StringParser as StringParser
 
-def start_data_saving(save_data_file_path, queue, header=None):
+def start_eeg_data_saving(save_data_file_path, queue, header=None):
     """
 
     This function is called from the BrainAmpInterface.

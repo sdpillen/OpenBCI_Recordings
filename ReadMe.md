@@ -77,7 +77,7 @@ To load pickle files, call:
     FP.load_pickle_file(pickle_file_path)
 
 #### Git
-###### How to make git ignore about previously tracked file:
+###### How to make git ignore about previously tracked file that are added to .gitignore:
 
 
      git rm --cached -r .

@@ -49,9 +49,6 @@ class NonOverlappingBuffer(object):
 
 
 class MovingWindowBuffer(object):
-    """
-    A NoOverlap Buffer is a buffer that reads in data
-    """
 
     def __init__(self, moving_window_size, num_channels, buffer_queue, out_queue, update_interval, internal_buffer_size=None):
         """
@@ -69,8 +66,10 @@ class MovingWindowBuffer(object):
                                 Data passed to this queue should be a list or 1D np array.
         :param out_queue:  Queue to place data on after the buffer reaches moving_window_size.
         :param update_interval: On ever update_interval samples, the pervious moving_window_size samples are placed on the out_queue
-        :param internal_buffer_size: The size to make the buffer internally.
+        :param internal_buffer_size: The size to make the buffer internally.  If none, will be set to 20 * moving_window_size. Defaults to None
         """
+        if internal_buffer_size is None:
+            internal_buffer_size = 20 * moving_window_size
         self.moving_window_size, self.num_channels = moving_window_size, num_channels
         self.update_interval = update_interval
         self.internal_buffer_size = internal_buffer_size

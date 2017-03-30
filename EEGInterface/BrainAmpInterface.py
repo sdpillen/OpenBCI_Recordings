@@ -4,7 +4,7 @@ A m p l i f i e r  S e t u p
 ============================
 
 Default Sampling Rate - 5000 Fs
-Number of channels: 32 (includeing ECG channel)
+Number of channels: 32 (including ECG channel)
 Sampling Interval [micro seconds]: 200  (0.0002 seconds; 5000 Hz)
 
 Packet size = 100 samples
@@ -25,7 +25,7 @@ from struct import *
 import time
 import Queue
 import threading
-import DataSaver
+import EEGDataSaver
 import numpy as np
 import EEG_INDEX
 
@@ -42,7 +42,7 @@ class Marker:
 
 class DataCollect(object):
 
-    def __init__(self, subject_data_path, channels_for_live, process_queue, subject_name=None, subject_tracking_number=None, experiment_number=None):
+    def __init__(self, subject_data_path, channels_for_live, out_buffer_queue, subject_name=None, subject_tracking_number=None, experiment_number=None):
         """
         A data collection object for the Brain Amp interface.  This provides option for live data streaming and saving data to file.
 
@@ -54,7 +54,7 @@ class DataCollect(object):
 
         :param subject_data_path: Path to save the save the data.  If None, no data will be saved.
         :param channels_for_live: List of channel names (or indexes) to put on the process_queue.
-        :param process_queue: The channels_for_live channel data will be placed on this queue if it is not None.
+        :param out_buffer_queue: The channels_for_live channel data will be placed on this queue if it is not None.
         :param subject_name: Optional -- Name of the subject. Defaults to 'None'
         :param subject_tracking_number: Optional -- Subject Tracking Number (AKA TMS group experiment number tracker). Defaults to 'None'
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
@@ -63,12 +63,14 @@ class DataCollect(object):
         # ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2', 'F7', 'F8', 'T7', 'T8', 'P7', 'P8', 'Fz', 'Cz',
         #  'Pz', 'Oz', 'FC1', 'FC2', 'CP1', 'CP2', 'FC5', 'FC6', 'CP5', 'CP6', 'TP9', 'TP10', 'POz', 'ECG']
 
-        self.data_save_queue = None
-        if subject_data_path is not None:
+
+        # Get our data_save_queue.  We'll set it to non if subject_data_path is none, meaning we aren't going to be saving data.
+        if subject_data_path is None:
+            self.data_save_queue = None
+        else:
             self.data_save_queue = Queue.Queue()
-            threading.Thread(target=lambda: DataSaver.start_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
-        self.collect_data = True
-        self.subject_data_path = subject_data_path
+            threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
+
 
         self.subject_data_path = subject_data_path
         self.subject_name= str(subject_name) if subject_name is not None else "None"
@@ -79,12 +81,12 @@ class DataCollect(object):
         self.data_index = -1
 
         # A separate queue (other than the one for storing data) that puts the channels_for_live data points on
-        self.process_queue = process_queue
+        self.process_queue = out_buffer_queue
 
         # block counter to check overflows of tcpip buffer
         self.last_block = -1
 
-        self.put_data_on_process_queue = False
+        self.put_data_on_out_queue = False
         self.channels_for_live = channels_for_live
 
         # Create a tcpip socket
@@ -131,9 +133,9 @@ class DataCollect(object):
 
     @staticmethod
     def get_properties(rawdata):
-        # Helper function for extracting eeg properties from a raw data array
-        # read from tcpip socket
-
+        """
+        Helper function for extracting eeg properties from a raw data array
+        """
         # Extract numerical data
         (channelCount, samplingInterval) = unpack('<Ld', rawdata[:12])
         print channelCount
@@ -150,8 +152,10 @@ class DataCollect(object):
         return channelCount, samplingInterval, resolutions, channelNames
 
     @staticmethod
-    def get_data(rawdata, channelCount):
-        # Helper function for extracting eeg and marker data from a raw data array
+    def get_data(rawdata, num_channels):
+        """
+        Helper function for extracting eeg and marker data from a raw data array
+        """
         # read from tcpip socket
 
         # Extract numerical data
@@ -159,14 +163,14 @@ class DataCollect(object):
 
         # Extract eeg data as array of floats
         data = []
-        for i in range(points * channelCount):
+        for i in range(points * num_channels):
             index = 12 + 4 * i
             value = unpack('<f', rawdata[index:index+4])
             data.append(value[0])
 
         # Extract markers
         markers = []
-        index = 12 + 4 * points * channelCount
+        index = 12 + 4 * points * num_channels
         for m in range(markerCount):
             markersize = unpack('<L', rawdata[index:index+4])
 
@@ -184,13 +188,11 @@ class DataCollect(object):
         """
         Start our recording
         """
-        # data buffer for calculation, empty in beginning
-        data1s = []
 
         # ##### Main Loop #### #
-        while self.collect_data:
+        while True:
             raw_data, msgsize, msgtype = self.get_raw_data()
-            # Perform action dependend on the message type
+            # Perform action dependent on the message type
             if msgtype == 1:
                 channel_count, sampling_interval, resolutions, channel_names, channel_dict, meta_info_str = self.first_message_actions(raw_data)
             elif msgtype == 4:
@@ -205,6 +207,7 @@ class DataCollect(object):
 
                 EEG_INDEX.EEG_INDEX = self.data_index
                 EEG_INDEX.EEG_INDEX_2 = self.data_index
+
                 ######################
                 # Check for overflow #
                 ######################
@@ -222,22 +225,16 @@ class DataCollect(object):
                 # Save the Data - We put data on the queue to be saved - format for queue (index, time, data)
                 if self.data_save_queue is not None:
                     self.data_save_queue.put((self.data_index, data_recieve_time, data))
-                if False:
-                    # print len(data)
-                    # Put data at the end of actual buffer
-                    data1s.extend(data)
-                    # If more than 1s of data is collected, calculate average power, print it and reset data buffer
-                    data1s = self.calc_avg_power(data1s, channel_count, sampling_interval, resolutions)
 
-                self.put_data_on_process_queue = True
-                if self.put_data_on_process_queue:
-                    self.handle_process_queue(data, resolutions, channel_count, channel_dict)
+                # if we are
+                if self.put_data_on_out_queue is not None:
+                    self.handle_out_buffer_queue(data, resolutions, channel_count, channel_dict)
 
             elif msgtype == 3:
                 self.con.close()  # Stop message, terminate program; Close tcpip connection
                 break
 
-    def handle_process_queue(self, data, resolutions, channel_count, channel_dict):
+    def handle_out_buffer_queue(self, data, resolutions, channel_count, channel_dict):
         """
         Number of channels: 32
         Sampling Rate [Hz]: 5000

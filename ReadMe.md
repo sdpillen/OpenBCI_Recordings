@@ -1,4 +1,4 @@
-# DLUtil
+# CCDLUtil
 
 ## Introduction
 
@@ -68,13 +68,13 @@ This reduces the need to write scripts to parse individual log files.
 If there is code that is commonly used, please include it here.
 
 ##### Assert Statements:
-    import DLUtil.Utility.AssertVal as AV
+    import CCDLUtil.Utility.AssertVal as AV
 
 ##### Pickle Files
 
 To load pickle files, call:
 
-    import DLUtil.DataManagement.FileParser as FP
+    import CCDLUtil.DataManagement.FileParser as FP
     FP.load_pickle_file(pickle_file_path)
 
 #### Git

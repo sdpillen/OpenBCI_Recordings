@@ -10,7 +10,7 @@ Sampling Interval [micro seconds]: 200  (0.0002 seconds; 5000 Hz)
 Packet size = 100 samples
 Packet arrival = 50 Hz
 
-See DLUtil/Documentation/BrainAmp for more information on how to use the Brain Amp interface.
+See CCDLUtil/Documentation/BrainAmp for more information on how to use the Brain Amp interface.
 
 This script is a modified Python RDA client for the RDA tcpip interface of the BrainVision Recorder. The unmodified file is
 within this same folder.
@@ -49,7 +49,7 @@ class DataCollect(object):
         For live data streaming, use with a threading or multiprocessing queue (ie. Queue.queue().
            Data will be put on the queue, which can be read by another thread.)
 
-        Modifies the EEG_INDEX and EEG_INDEX_2 in DLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
+        Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
             Use this to time mark events in your other programs.
 
         :param subject_data_path: Path to save the save the data.  If None, no data will be saved.
@@ -99,7 +99,7 @@ class DataCollect(object):
             self.con.connect(("localhost", 51244))
         except:
             print "--Ensure that the BrainVision software is on and the dongle is plugged in and functioning."
-            print "See DLUtil Documentation for instructions on how to run the BrainVision EEG system --"
+            print "See CCDLUtil Documentation for instructions on how to run the BrainVision EEG system --"
             raise
 
     @staticmethod

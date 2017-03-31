@@ -155,3 +155,12 @@ This provides a very long, complicated error message.  The portion shown below i
     Warning: ID:<15> <Unexpected END_BYTE found <0> instead of <192>
     WARNING:root:Skipped 466 bytes before start found
     'NoneType' object has no attribute 'channel_data' 'NoneType' object has no attribute 'channel_data'
+
+5. BrainAmp Disconnect/Software not on
+    
+    Ensure that the proprietary BrainAmp software is running and the BrainAmp system is fully conenected (see Documentation folder for more details)
+    Otherwise, this is the common error message:
+    
+
+    No connection could be made because the target machine actively refused it
+    

@@ -5,7 +5,7 @@ This takes data from a queue and writes it to disk.  This is typically event dat
 an experiment (not EEG data).
 
 """
-from DataManagement import StringParser
+import StringParser
 
 
 class Log(object):

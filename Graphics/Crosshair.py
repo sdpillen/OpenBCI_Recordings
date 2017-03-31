@@ -1,19 +1,13 @@
-"""
-Crosshair via wxpython.  See __main__ for an example use.
-"""
 import wx
-import time
-
 
 class Crosshair(wx.Frame):
-
-    def __init__(self, x_pos, y_pos, screen_width=1920, screen_height=1080, title="Crosshair", background_color="#686868",
+    def __init__(self, x_pos=-1920, y_pos=0, screen_width=1920, screen_height=1080, title="Crosshair", background_color="#686868",
                  crosshair_height=60, crosshair_width=60, thickness=7, hide_cursor=True):
         """
         A wxpython Crosshair that can flash red.
 
-        :param x_pos: x position
-        :param y_pos: y position
+        :param x_pos: x position (defaults to 1920 pixels left of main screen)
+        :param y_pos: y position (defaults to 0)
         :param screen_width: size of screen in pixels
         :param screen_height: height of screen in pixels
         :param title: Not displayed externally.  Defaults to "Crosshair"
@@ -23,8 +17,8 @@ class Crosshair(wx.Frame):
         :param thickness: Thickness of crosshair
         :param hide_cursor: Hides the cursor when cursor is displayed over crosshair if True.
         """
+        wx.Frame.__init__(self, None, title="Crosshair", style=wx.NO_BORDER)
 
-        wx.Frame.__init__(self, None, title, style=wx.NO_BORDER)
         self.height_half = crosshair_height // 2
         self.width_half = crosshair_width // 2
         self.screenheight_half = screen_height // 2
@@ -66,15 +60,10 @@ class Crosshair(wx.Frame):
         self.Refresh(True)
 
 if __name__ == '__main__':
-    """
-    Example use case.
-    """
     app = wx.App(False)
-
-    # Show it on screen to the left of primary screen
-    ch = Crosshair(-1920, 0)
-    # Set size (or can be passed as parameter)
-    ch.SetSize((1920, 1080))
-    ch.SetPosition((-1920, 0))
+    ch = Crosshair()
+    ch.Show()
+    ch.SetSize((1920, 1000))
+    ch.SetPosition((0, 0))
     ch.Show()
     app.MainLoop()

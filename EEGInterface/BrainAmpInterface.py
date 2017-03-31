@@ -81,12 +81,12 @@ class DataCollect(object):
         self.data_index = -1
 
         # A separate queue (other than the one for storing data) that puts the channels_for_live data points on
-        self.process_queue = out_buffer_queue
+        self.out_queue = out_buffer_queue
 
         # block counter to check overflows of tcpip buffer
         self.last_block = -1
 
-        self.put_data_on_out_queue = False
+        self.put_data_on_out_queue_flag = False
         self.channels_for_live = channels_for_live
 
         # Create a tcpip socket
@@ -151,8 +151,8 @@ class DataCollect(object):
 
         return channelCount, samplingInterval, resolutions, channelNames
 
-    @staticmethod
-    def get_data(rawdata, num_channels):
+
+    def get_data(self, rawdata, num_channels):
         """
         Helper function for extracting eeg and marker data from a raw data array
         """
@@ -227,7 +227,7 @@ class DataCollect(object):
                     self.data_save_queue.put((self.data_index, data_recieve_time, data))
 
                 # if we are
-                if self.put_data_on_out_queue is not None:
+                if self.put_data_on_out_queue_flag is not None:
                     self.handle_out_buffer_queue(data, resolutions, channel_count, channel_dict)
 
             elif msgtype == 3:
@@ -265,7 +265,7 @@ class DataCollect(object):
             channel_data = [data[index + channel_index] * resolution for index in indexes_needed]
             channels[:, ii] = np.asarray(channel_data)
         # Put our numpy array of channels on the queue.  Channels shape -> [samples (10), channel]
-        self.process_queue.put(channels)
+        self.out_queue.put(channels)
 
     @staticmethod
     def print_marker_count(markers, marker_count):

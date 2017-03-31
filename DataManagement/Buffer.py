@@ -3,7 +3,7 @@ This file is for EEG buffers
 """
 
 import numpy as np
-import Utility.AssertVal as AV
+import CCDLUtil.Utility.AssertVal as AV
 
 
 class MovingWindowBuffer(object):

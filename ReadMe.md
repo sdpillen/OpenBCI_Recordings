@@ -131,7 +131,7 @@ wxpython does some threading automatically and they did not make their code thre
     1. Pango:ERROR:/build/pango1.0-_EsyGA/pango1.0-1.40.1/./pango/pango-layout.c:3925:pango_layout_check_lines: assertion failed: (!layout->log_attrs)
 
 2. This error likely comes from specifying the directory and not the specific file for loading a TF object.
-This provides a very long, complicated error message.  The portion shown below is the last segement.
+This provides a very long, complicated error message.  The portion shown below is the last segment.
 
 
     2. DataLossError (see above for traceback): Unable to open table file /media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/Ninja/Subject3/Subject3_TF: Failed precondition: /media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/Ninja/Subject3/Subject3_TF: perhaps your file is in a different file format and you need to use a different restore operator?

@@ -44,7 +44,6 @@ import sys
 import os
 import Queue
 
-
 class CursorTask(object):
 
     """
@@ -88,6 +87,8 @@ class CursorTask(object):
 
     CROSSHAIR_BKGRND = 'crosshair_background'
     CURSOR_BKGRND = 'cursor_background'
+
+
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
                  crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0,0,0), window_x_pos=-1920, window_y_pos=0,

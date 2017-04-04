@@ -83,18 +83,20 @@ class CursorTask(object):
 
     SHOW_BLANK = 'show_blank'
     SHOW_CROSSHAIR = 'show_crosshair'
+    SET_CROSSHAIR_CROSS_COLOR = 'set_crosshair_cross_color'
     HIDE_CURSOR = 'hide_cursor'
 
     CROSSHAIR_BKGRND = 'crosshair_background'
     CURSOR_BKGRND = 'cursor_background'
-
-
+    CROSSHAIR_CROSS_COLOR_RED = 'crosshair_cross_color_red'
+    CROSSHAIR_CROSS_COLOR_WHITE = 'crosshair_cross_color_white'
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
-                 crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0,0,0), window_x_pos=-1920, window_y_pos=0,
+                 crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0,
                  target_thickness=100, cursor_radius=60, font_size=40, font_type="Calibri (Body)",
+                 crosshair_cross_color=(255, 255, 255),
                  show_mouse=False, tick_time=10, crosshair_height=30, crosshair_width=30, crosshair_thickness=8,
-                 target_size_left = (100, None), target_size_right = (100, None), target_size_top = (None, 100), target_size_bottom = (None, 100)):
+                 target_size_left=(100, None), target_size_right=(100, None), target_size_top=(None, 100), target_size_bottom=(None, 100)):
         """
         Defaults to drawing the crosshair first.
 
@@ -128,7 +130,7 @@ class CursorTask(object):
 
         # Fix our targets (removing all None attributes and replacing with screen height/width.
         self.target_size_left, self.target_size_right, self.target_size_top, self.target_size_bottom = \
-            self.get_real_target_size(target_size_left, target_size_right, target_size_top, target_size_bottom)
+            self.fix_none_values_in_target_sizes(target_size_left, target_size_right, target_size_top, target_size_bottom)
 
         # Set our window position  (not sure if this commands works on non-windows computers...)
         os.environ['SDL_VIDEO_WINDOW_POS'] = str(window_x_pos) + "," + str(window_y_pos)
@@ -151,7 +153,7 @@ class CursorTask(object):
         self.crosshair_height = crosshair_height
         self.crosshair_width = crosshair_width
         self.crosshair_thickness = crosshair_thickness
-
+        self.crosshair_cross_color = crosshair_cross_color
 
         self.bar_thickness_y = self.screen_width
         self.bar_thickness_x = target_thickness
@@ -202,8 +204,7 @@ class CursorTask(object):
         self.font = pygame.font.SysFont(font_type, font_size)
         # pygame.event.set_blocked(pygame.MOUSEMOTION)
 
-
-    def get_real_target_size(self, target_size_left, target_size_right, target_size_top, target_size_bottom):
+    def fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top, target_size_bottom):
         """
         top or bottom targets--
             If first dimension is None, converts first dimension to the width of the screen if a top or bottom target.
@@ -232,7 +233,6 @@ class CursorTask(object):
 
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
-
     def gen_action_dictionary(self):
         """
         This is a function that initializes our action dictionary.
@@ -253,13 +253,15 @@ class CursorTask(object):
                              self.UNCOLLIDE_BOTTOM: lambda: self.uncollide_bottom(),
 
                              self.MOVE_CURSOR: lambda move_cursor_val: self.set_cursor_x_coord(move_cursor_val),
-                             self.SHOW_CURSOR: lambda: self.show_cursor(),
+                             self.SHOW_CURSOR: lambda: self.show_cursor(True),
                              self.SHOW_LEFT_FLAG: lambda booll: self.show_left_flag(booll),
                              self.SHOW_RIGHT_FLAG: lambda boolr: self.show_right_flag(boolr),
-                             self.SHOW_BLANK: lambda : self.show_blank(),
-                             self.SHOW_CROSSHAIR: lambda : self.show_crosshair()}
+                             self.SHOW_BLANK: lambda: self.hide_all(),
+                             self.SHOW_CROSSHAIR: lambda scb: self.show_crosshair(scb),
+                             self.SET_CROSSHAIR_CROSS_COLOR: lambda color: self.set_crosshairs_color_for_flash(color=color),
+                             self.CROSSHAIR_CROSS_COLOR_RED: lambda chred=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chred),
+                             self.CROSSHAIR_CROSS_COLOR_WHITE: lambda chwhite=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chwhite)}
         return action_dictionary
-
 
     def reset(self, color=None):
         """
@@ -456,7 +458,7 @@ class CursorTask(object):
                 if args is None:
                     self.q_action_dictionary[key]()
                 else:
-                    self.q_action_dictionary[key](args)
+                    self.q_action_dictionary[key](*args)
             except Queue.Empty:
                 pass
             self.clear_events()
@@ -464,27 +466,30 @@ class CursorTask(object):
             self.draw_shapes()
             pygame.display.update()
 
-    def show_crosshair(self):
+    def show_crosshair(self, b):
         """
-        Shows the crosshair, hiding all our flags
+        Shows the crosshair
         :return:
         """
-        self.draw_cursor_flag = False
-        self.draw_crosshair_flag = True
+        self.show_cursor(b)
 
-    def show_cursor(self):
+    def show_cursor(self, b):
         """
-        Shows the cursor, hiding our crosshair
+        Shows the cursor
         """
-        self.draw_cursor_flag = True
-        self.draw_crosshair_flag = False
+        self.draw_cursor_flag = b
 
-    def show_blank(self):
+    def hide_all(self):
         """
         Sets the screen blank, hiding everything
         """
-        self.draw_cursor_flag = False
-        self.draw_crosshair_flag = False
+        self.show_cursor(False)
+        self.show_all_flags(False)
+        self.show_crosshair(False)
+
+    def hide_all_cursor_task_related_items(self):
+        self.show_cursor(False)
+        self.show_all_flags(False)
 
     def show_left_flag(self, b):
         """
@@ -568,10 +573,10 @@ class CursorTask(object):
             width_half = self.crosshair_width // 2
             screenheight_half = self.screen_height // 2
             screenwidth_half = self.screen_width // 2
-            pygame.draw.rect(self.screen, (255, 255, 255),
+            pygame.draw.rect(self.screen, self.crosshair_cross_color,
                              pygame.Rect((screenwidth_half - width_half, screenheight_half),
                                          (self.crosshair_width, self.crosshair_thickness)))
-            pygame.draw.rect(self.screen, (255, 255, 255),
+            pygame.draw.rect(self.screen, self.crosshair_cross_color,
                              pygame.Rect((screenwidth_half, screenheight_half - height_half),
                                          (self.crosshair_thickness, self.crosshair_height)))
         if self.draw_cursor_flag:
@@ -598,6 +603,36 @@ class CursorTask(object):
             # Are we drawing the bottom flag?
             pygame.draw.rect(self.screen, self.bottom_color,
                              pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_bottom))
+
+    def show_only_lrtb_flags_with_cursor_background(self, lrtb_lst, show_cursor=False):
+        """
+        
+        :param lrtb_lst: A list containing the elements {'l', 'r', 't', 'b'} that shows whether to show each cursor in the list
+                Sets background to the specified cursor background
+        :param show_cursor: if True, we'll show the cursor as well, else we'll hide it.
+        :return: None
+        """
+        self.hide_all()
+        self.set_to_cursor_background_color()
+        lrtb_lst = set([xx.lower() for xx in lrtb_lst])
+        if 'l' in lrtb_lst:
+            self.show_left_flag(True)
+        if 'r' in lrtb_lst:
+            self.show_right_flag(True)
+        if 't' in lrtb_lst:
+            self.show_top_flag(True)
+        if 'b' in lrtb_lst:
+            self.show_bottom_flag(True)
+        if show_cursor:
+            self.show_cursor(True)
+
+    def set_crosshairs_color_for_flash(self, color=(255, 255, 255)):
+        """
+        Sets the crosshair color to color.
+        :param color: RGB (tuple) color.  Defaults to white.
+        """
+        self.crosshair_cross_color = color
+
 
 if __name__ == '__main__':
     CursorTask().run_with_keys()

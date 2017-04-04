@@ -202,7 +202,7 @@ class CursorTask(object):
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.NOFRAME)
 
         self.font = pygame.font.SysFont(font_type, font_size)
-        # pygame.event.set_blocked(pygame.MOUSEMOTION)
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
 
     def fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top, target_size_bottom):
         """

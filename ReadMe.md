@@ -87,7 +87,11 @@ To load pickle files, call:
 See this link for reference:
 http://stackoverflow.com/questions/1274057/how-to-make-git-forget-about-a-file-that-was-tracked-but-is-now-in-gitignore
 
- 
+###### Pull from remote, but ignoring (and overwriting!) local changes:
+
+    git fetch origin master
+    git reset —hard FETCH_head
+    git clean -df
     
 
 ## CCDL General Documentation
@@ -107,9 +111,10 @@ switches on the side are set properly:
 The OpenBCI board will not run properly the second time it starts unless
 it is physically reset between runs.  Therefore, every time the program is run you must:
 
-   1. Unplug the dongle and turn off the board
-   2. Plug in the dongle
-   3. Turn on the board.
+
+        1. Unplug the dongle and turn off the board
+        2. Plug in the dongle
+        3. Turn on the board.
 
 See the "Error Messages" section below to see markers of this error.
 
@@ -128,33 +133,36 @@ See the "Error Messages" section below to see markers of this error.
 wxpython does some threading automatically and they did not make their code thread safe.
 
 
-    1. Pango:ERROR:/build/pango1.0-_EsyGA/pango1.0-1.40.1/./pango/pango-layout.c:3925:pango_layout_check_lines: assertion failed: (!layout->log_attrs)
+            1. Pango:ERROR:/build/pango1.0-_EsyGA/pango1.0-1.40.1/./pango/pango-layout.c:3925:pango_layout_check_lines: assertion failed: (!layout->log_attrs)
+
 
 2. This error likely comes from specifying the directory and not the specific file for loading a TF object.
 This provides a very long, complicated error message.  The portion shown below is the last segment.
 
 
-    2. DataLossError (see above for traceback): Unable to open table file /media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/Ninja/Subject3/Subject3_TF: Failed precondition: /media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/Ninja/Subject3/Subject3_TF: perhaps your file is in a different file format and you need to use a different restore operator?
-	 [[Node: save/restore_slice = RestoreSlice[dt=DT_FLOAT, preferred_shard=-1, _device="/job:localhost/replica:0/task:0/cpu:0"](_recv_save/Const_0, save/restore_slice/tensor_name, save/restore_slice/shape_and_slice)]]
+            2. DataLossError (see above for traceback): Unable to open table file
+            /data/Subject3/Subject3_TF: Failed precondition: Subject3/Subject3_TF: perhaps your file is in a
+            different file format and you need to use a different restore operator?
+             [[Node: save/restore_slice = RestoreSlice[dt=DT_FLOAT, preferred_shard=-1,
+             _device="/job:localhost/replica:0/task:0/cpu:0"](_recv_save/Const_0, save/restore_slice/tensor_name, save/restore_slice/shape_and_slice)]]
 
 3. This error likely comes about from not stripping off a trailing comma in some versions of data collected from the brain amp system.
     ** The new method takes care of this.
 
-
-    3.File "/DataInterface/Utility/FileParser.py", line 118, in iter_func
-    yield dtype(item)
-    ValueError: could not convert string to float:
+        3.File "/DataInterface/Utility/FileParser.py", line 118, in iter_func
+        yield dtype(item)
+        ValueError: could not convert string to float:
 
 
 4. OpenBCI Disconnect
 
 
-    WARNING:root:Skipped 46 bytes before start found
-    Warning: Skipped 46 bytes before start found
-    WARNING:root:ID:<15> <Unexpected END_BYTE found <0> instead of <192>
-    Warning: ID:<15> <Unexpected END_BYTE found <0> instead of <192>
-    WARNING:root:Skipped 466 bytes before start found
-    'NoneType' object has no attribute 'channel_data' 'NoneType' object has no attribute 'channel_data'
+        WARNING:root:Skipped 46 bytes before start found
+        Warning: Skipped 46 bytes before start found
+        WARNING:root:ID:<15> <Unexpected END_BYTE found <0> instead of <192>
+        Warning: ID:<15> <Unexpected END_BYTE found <0> instead of <192>
+        WARNING:root:Skipped 466 bytes before start found
+        'NoneType' object has no attribute 'channel_data' 'NoneType' object has no attribute 'channel_data'
 
 5. BrainAmp Disconnect/Software not on
     
@@ -162,5 +170,5 @@ This provides a very long, complicated error message.  The portion shown below i
     Otherwise, this is the common error message:
     
 
-    No connection could be made because the target machine actively refused it
+        No connection could be made because the target machine actively refused it
     

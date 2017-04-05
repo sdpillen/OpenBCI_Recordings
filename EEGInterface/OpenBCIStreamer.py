@@ -1,6 +1,7 @@
 import OpenBCIHardwareInterface as BciHwInter
 import time
 import Utility.SystemInformation as SystemInfo
+import EEG_INDEX
 
 
 class OpenBCIStreamer(object):

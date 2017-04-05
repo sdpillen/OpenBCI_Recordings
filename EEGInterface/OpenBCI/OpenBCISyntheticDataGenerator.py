@@ -1,7 +1,8 @@
-import OpenBCIStreamer
-import OpenBCIHardwareInterface as HardwareInterface
-import time
 import random
+import time
+
+import OpenBCIHardwareInterface as HardwareInterface
+import OpenBCIStreamer
 
 
 class OpenBCISyntheticData(OpenBCIStreamer.OpenBCIStreamer):

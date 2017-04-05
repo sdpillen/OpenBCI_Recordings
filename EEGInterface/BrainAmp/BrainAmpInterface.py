@@ -25,10 +25,10 @@ import struct
 import time
 import Queue
 import threading
-import EEGDataSaver
+import EEGInterface.EEGDataSaver
 import numpy as np
-import EEG_INDEX
-import EEGInterfaceParent
+import EEGInterface.EEG_INDEX
+import EEGInterface.EEGInterfaceParent
 
 
 class Marker:
@@ -41,7 +41,7 @@ class Marker:
         self.description = ""
 
 
-class BrainAmpStreamer(EEGInterfaceParent.EEGInterfaceParent):
+class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     """
     A Parent interface that should be inherited other systems that interface with EEG.
@@ -186,8 +186,8 @@ class BrainAmpStreamer(EEGInterfaceParent.EEGInterfaceParent):
                 data_recieve_time = time.time()
                 self.data_index += 1  # Increase our sample counter
 
-                EEG_INDEX.EEG_INDEX = self.data_index
-                EEG_INDEX.EEG_INDEX_2 = self.data_index
+                EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
+                EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
 
                 ######################
                 # Check for overflow #

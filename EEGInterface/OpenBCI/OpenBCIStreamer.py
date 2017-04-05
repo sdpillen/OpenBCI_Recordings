@@ -1,12 +1,12 @@
 import OpenBCIHardwareInterface as BciHwInter
 import time
 import Utility.SystemInformation as SystemInfo
-import EEG_INDEX
-import EEGInterfaceParent
+import EEGInterface.EEG_INDEX
+import EEGInterface.EEGInterfaceParent
 import os
 
 
-class OpenBCIStreamer(EEGInterfaceParent.EEGInterfaceParent):
+class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     def __init__(self, out_buffer_queue, channels_for_live='All', channels_for_save='All', include_aux_in_save_file=True, data_save_queue=None, subject_name=None,
                  subject_tracking_number=None, experiment_number=None, channel_names=None, port=None, baud=115200):
@@ -113,8 +113,8 @@ class OpenBCIStreamer(EEGInterfaceParent.EEGInterfaceParent):
                 self.data_save_queue.put(data_str + '\n')
 
         # Set our two EEG INDEX parameters.
-        EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
-        EEG_INDEX.CURR_EEG_INDEX_2 = self.overall_data_index
+        EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
+        EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.overall_data_index
 
     def start_open_bci_streamer(self):
         """

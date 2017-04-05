@@ -26,7 +26,10 @@ It is important that all code committed to this repository is:
 This is intended as a general library.  If using, please clone into your site-packages folder (if using Windows; an example path
 C:\Python27\Lib\site_packages), or another folder that is in your working path.
 
-            
+I renamed this project from DLUtil to CCDLUtil.  If cloning from gitlab, you may
+need to rename the folder it clones into (from DLUtil -> CCDLUtil) for imports
+to work properly.
+
 ### Additional Documentation
            
 Please include descriptions of any new modules you create in readme files. 

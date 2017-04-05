@@ -21,7 +21,7 @@ It is important that all code committed to this repository is:
             Please see https://help.github.com/articles/ignoring-files/ if you are unsure how to do this.  A basic .gitignore file is included in this repo.
             
 
-### Instructions for use
+## Instructions for use
 
 This is intended as a general library.  If using, please clone into your site-packages folder (if using Windows; an example path
 C:\Python27\Lib\site_packages), or another folder that is in your working path.
@@ -30,11 +30,38 @@ I renamed this project from DLUtil to CCDLUtil.  If cloning from gitlab, you may
 need to rename the folder it clones into (from DLUtil -> CCDLUtil) for imports
 to work properly.
 
-### Additional Documentation
-           
-Please include descriptions of any new modules you create in readme files. 
+## Recommendations for Getting Started
 
-### Dependencies
+
+##### Multithreading/multiprocessing:
+
+This module (and nearly all complex programs) require multithreading/multiprocessing.
+
+Here is a link to the api for threading:
+https://docs.python.org/2/library/threading.html
+
+Here is a link to the api for multiprocessing (this is intended to have
+the same face as the threading module, but different 'under the hood'
+characteristics -- use a multiprocessing.queue() for
+communicating between processes):
+https://docs.python.org/2/library/multiprocessing.html
+
+
+##### Communication between threads:
+Here is a link for using queues to communicate between threads/processes
+https://docs.python.org/2/library/queue.html
+
+##### Anonymous functions:
+This module also abuses anonymous functions. Read more here:
+http://www.secnetix.de/olli/Python/lambda_functions.hawk
+
+## Additional Documentation
+           
+Please include descriptions of any new modules you create in readme files.
+
+Additional documentation is available in the CCDL/Documentation folder.
+
+## Dependencies
 Runs with python 2.7.  Some modules many not require all dependencies. 
 
     numpy
@@ -46,7 +73,7 @@ Runs with python 2.7.  Some modules many not require all dependencies.
     pyaml
     json
 
-### Data Formats
+## Suggested Data Formats
 
 #### Epoched and unepoched EEG Data
 
@@ -130,7 +157,7 @@ See the "Error Messages" section below to see markers of this error.
         3) Select the correct touchscreen
 
 
-### Common  Error Messages
+## Common Error Messages
 
 1. This error means that you are accessing a wxpython object in an unsafe manner. Make sure to use locks, even if you are running everything in the same thread.
 wxpython does some threading automatically and they did not make their code thread safe.

@@ -60,20 +60,22 @@ class CursorTask(object):
         queue.put((CursorTask.SHOW_LEFT_FLAG, False))  # With arguments... hides left target
     """
 
+    # Collision messages
     COLLIDE_TOP = 'collide_top'
     COLLIDE_BOTTOM = 'collide_bottom'
     COLLIDE_LEFT = 'collide_left'
     COLLIDE_RIGHT = 'collide_right'
 
+    # Uncollide Messages
     UNCOLLIDE_ALL = 'uncollide_all'
     # UNCOLLIDE_LR = 'uncollide_left_right'
     # UNCOLLIDE_TB = 'uncollide_top_bottom'
-
     UNCOLLIDE_TOP = 'uncollide_right'
     UNCOLLIDE_BOTTOM = 'uncollide_bottom'
     UNCOLLIDE_LEFT = 'uncollide_left'
     UNCOLLIDE_RIGHT = 'uncollide_right'
 
+    # Cursor Task messages
     MOVE_CURSOR = 'move_cursor'
     SHOW_CURSOR = 'show_cursor'
     SHOW_LEFT_FLAG = 'show_left_flag'
@@ -81,6 +83,7 @@ class CursorTask(object):
     SHOW_TOP_FLAG = 'show_left_flag'
     SHOW_BOTTOM_FLAG = 'show_right_flag'
 
+    # Global settings
     SHOW_BLANK = 'show_blank'
     SHOW_CROSSHAIR = 'show_crosshair'
     SET_CROSSHAIR_CROSS_COLOR = 'set_crosshair_cross_color'
@@ -90,6 +93,10 @@ class CursorTask(object):
     CURSOR_BKGRND = 'cursor_background'
     CROSSHAIR_CROSS_COLOR_RED = 'crosshair_cross_color_red'
     CROSSHAIR_CROSS_COLOR_WHITE = 'crosshair_cross_color_white'
+
+    # Main Commands:
+    ONLY_CROSSHAIR_WITH_BACKGROUND = 'show_only_crosshair_with_background'  # No Args.
+
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
                  crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0,
@@ -204,6 +211,38 @@ class CursorTask(object):
         self.font = pygame.font.SysFont(font_type, font_size)
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
+
+    def gen_action_dictionary(self):
+        """
+        This is a function that initializes our action dictionary.
+
+        This is a simple way of encapsulating our function calls.  To use, call:
+            action_dictionary[key](args)
+        """
+
+        action_dictionary = {self.COLLIDE_LEFT: lambda: self.collide_left(),
+                             self.COLLIDE_RIGHT: lambda: self.collide_right(),
+                             self.COLLIDE_TOP: lambda: self.collide_top(),
+                             self.COLLIDE_BOTTOM: lambda: self.collide_bottom(),
+                             # todo fix the rest of these.
+                             self.UNCOLLIDE_ALL: lambda: self.uncollide_all(),
+                             self.UNCOLLIDE_RIGHT: lambda: self.uncollide_right(),
+                             self.UNCOLLIDE_LEFT: lambda: self.uncollide_left(),
+                             self.UNCOLLIDE_TOP: lambda: self.uncollide_top(),
+                             self.UNCOLLIDE_BOTTOM: lambda: self.uncollide_bottom(),
+
+                             self.MOVE_CURSOR: lambda move_cursor_val: self.set_cursor_x_coord(move_cursor_val),
+                             self.SHOW_CURSOR: lambda: self.show_cursor(True),
+                             self.SHOW_LEFT_FLAG: lambda booll: self.show_left_flag(booll),
+                             self.SHOW_RIGHT_FLAG: lambda boolr: self.show_right_flag(boolr),
+                             self.SHOW_BLANK: lambda: self.hide_all(),
+                             self.SHOW_CROSSHAIR: lambda scb: self.show_crosshair(scb),
+                             self.SET_CROSSHAIR_CROSS_COLOR: lambda color: self.set_crosshairs_color_for_flash(color=color),
+                             self.CROSSHAIR_CROSS_COLOR_RED: lambda chred=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chred),
+                             self.CROSSHAIR_CROSS_COLOR_WHITE: lambda chwhite=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chwhite),
+                             self.ONLY_CROSSHAIR_WITH_BACKGROUND: lambda: self.show_only_crosshairs_with_ch_background()}
+        return action_dictionary
+
     def fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top, target_size_bottom):
         """
         top or bottom targets--
@@ -233,35 +272,6 @@ class CursorTask(object):
 
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
-    def gen_action_dictionary(self):
-        """
-        This is a function that initializes our action dictionary.
-
-        This is a simple way of encapsulating our function calls.  To use, call:
-            action_dictionary[key](args)
-        """
-
-        action_dictionary = {self.COLLIDE_LEFT: lambda: self.collide_left(),
-                             self.COLLIDE_RIGHT: lambda: self.collide_right(),
-                             self.COLLIDE_TOP: lambda: self.collide_top(),
-                             self.COLLIDE_BOTTOM: lambda: self.collide_bottom(),
-                             # todo fix the rest of these.
-                             self.UNCOLLIDE_ALL: lambda: self.uncollide_all(),
-                             self.UNCOLLIDE_RIGHT: lambda: self.uncollide_right(),
-                             self.UNCOLLIDE_LEFT: lambda: self.uncollide_left(),
-                             self.UNCOLLIDE_TOP: lambda: self.uncollide_top(),
-                             self.UNCOLLIDE_BOTTOM: lambda: self.uncollide_bottom(),
-
-                             self.MOVE_CURSOR: lambda move_cursor_val: self.set_cursor_x_coord(move_cursor_val),
-                             self.SHOW_CURSOR: lambda: self.show_cursor(True),
-                             self.SHOW_LEFT_FLAG: lambda booll: self.show_left_flag(booll),
-                             self.SHOW_RIGHT_FLAG: lambda boolr: self.show_right_flag(boolr),
-                             self.SHOW_BLANK: lambda: self.hide_all(),
-                             self.SHOW_CROSSHAIR: lambda scb: self.show_crosshair(scb),
-                             self.SET_CROSSHAIR_CROSS_COLOR: lambda color: self.set_crosshairs_color_for_flash(color=color),
-                             self.CROSSHAIR_CROSS_COLOR_RED: lambda chred=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chred),
-                             self.CROSSHAIR_CROSS_COLOR_WHITE: lambda chwhite=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chwhite)}
-        return action_dictionary
 
     def reset(self, color=None):
         """
@@ -471,7 +481,7 @@ class CursorTask(object):
         Shows the crosshair
         :return:
         """
-        self.show_cursor(b)
+        self.draw_crosshair_flag = b
 
     def show_cursor(self, b):
         """
@@ -603,6 +613,14 @@ class CursorTask(object):
             # Are we drawing the bottom flag?
             pygame.draw.rect(self.screen, self.bottom_color,
                              pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_bottom))
+
+    def show_only_crosshairs_with_ch_background(self):
+        """
+        Shows only the crosshairs, chaning the background color to our background crosshair color
+        """
+        self.hide_all()
+        self.set_to_crosshair_background_color()
+        self.show_crosshair(True)
 
     def show_only_lrtb_flags_with_cursor_background(self, lrtb_lst, show_cursor=False):
         """

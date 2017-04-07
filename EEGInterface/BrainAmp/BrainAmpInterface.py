@@ -20,14 +20,15 @@ within this same folder.
 # Todo  This script has 32 channels hard-coded.  This needs to be fixed to work with other numbers.
 
 # needs socket and struct library
-from socket import *
-from struct import *
+import socket
+import struct
 import time
 import Queue
 import threading
-import EEGDataSaver
+import EEGInterface.EEGDataSaver
 import numpy as np
-import EEG_INDEX
+import EEGInterface.EEG_INDEX
+import EEGInterface.EEGInterfaceParent
 
 
 class Marker:
@@ -40,57 +41,37 @@ class Marker:
         self.description = ""
 
 
-class DataCollect(object):
+class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
-    def __init__(self, subject_data_path, channels_for_live, out_buffer_queue, subject_name=None, subject_tracking_number=None, experiment_number=None):
+    """
+    A Parent interface that should be inherited other systems that interface with EEG.
+    """
+
+    def __init__(self, channels_for_live, out_buffer_queue, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
         """
-        A data collection object for the Brain Amp interface.  This provides option for live data streaming and saving data to file.
+        A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
 
-        For live data streaming, use with a threading or multiprocessing queue (ie. Queue.queue().
+        For live data streaming, use with a threading or multiprocessing queue (ie. Queue.queue()
            Data will be put on the queue, which can be read by another thread.)
 
         Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
             Use this to time mark events in your other programs.
 
-        :param subject_data_path: Path to save the save the data.  If None, no data will be saved.
-        :param channels_for_live: List of channel names (or indexes) to put on the process_queue.
-        :param out_buffer_queue: The channels_for_live channel data will be placed on this queue if it is not None.
+        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [], no channels will be put on the out_buffer_queue.
+                                  If 'All', all channels will be placed on the out_buffer_queue.
+        :param data_save_queue: queue to put data to save.  If None, data will not be saved.
+        :param out_buffer_queue: The channel listed in the channels_for_live parameter will be placed on this queue. This is intended for live data analysis.
+                                 If None, no data will be put on the queue.
+                                 Items put on the out buffer queue will be a numpy array (though this can be either a 2D or a 1D numpy array)
         :param subject_name: Optional -- Name of the subject. Defaults to 'None'
         :param subject_tracking_number: Optional -- Subject Tracking Number (AKA TMS group experiment number tracker). Defaults to 'None'
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
         """
-        # Typical 32 channels for live (take from signal tester)
-        # ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2', 'F7', 'F8', 'T7', 'T8', 'P7', 'P8', 'Fz', 'Cz',
-        #  'Pz', 'Oz', 'FC1', 'FC2', 'CP1', 'CP2', 'FC5', 'FC6', 'CP5', 'CP6', 'TP9', 'TP10', 'POz', 'ECG']
-
-
-        # Get our data_save_queue.  We'll set it to non if subject_data_path is none, meaning we aren't going to be saving data.
-        if subject_data_path is None:
-            self.data_save_queue = None
-        else:
-            self.data_save_queue = Queue.Queue()
-            threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
-
-
-        self.subject_data_path = subject_data_path
-        self.subject_name= str(subject_name) if subject_name is not None else "None"
-        self.subject_number = str(subject_tracking_number) if subject_tracking_number is not None else 'None'
-        self.experiment_number = str(experiment_number) if experiment_number is not None else 'None'
-
-        # Count each block we recieve
-        self.data_index = -1
-
-        # A separate queue (other than the one for storing data) that puts the channels_for_live data points on
-        self.out_queue = out_buffer_queue
-
-        # block counter to check overflows of tcpip buffer
-        self.last_block = -1
-
-        self.put_data_on_out_queue_flag = False
-        self.channels_for_live = channels_for_live
-
+        # Call our EEGInterfaceParent init method.
+        super(BrainAmpStreamer, self).__init__(channels_for_live, out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
+                                               subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
         # Create a tcpip socket
-        self.con = socket(AF_INET, SOCK_STREAM)
+        self.con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect to recorder host via 32Bit RDA-port
         # adapt to your host, if recorder is not running on local machine
         # change port to 51234 to connect to 16Bit RDA-port
@@ -137,17 +118,17 @@ class DataCollect(object):
         Helper function for extracting eeg properties from a raw data array
         """
         # Extract numerical data
-        (channelCount, samplingInterval) = unpack('<Ld', rawdata[:12])
+        (channelCount, samplingInterval) = struct.unpack('<Ld', rawdata[:12])
         print channelCount
         # Extract resolutions
         resolutions = []
         for c in range(channelCount):
             index = 12 + c * 8
-            restuple = unpack('<d', rawdata[index:index+8])
+            restuple = struct.unpack('<d', rawdata[index:index+8])
             resolutions.append(restuple[0])
 
         # Extract channel names
-        channelNames = DataCollect.split_string(rawdata[12 + 8 * channelCount:])
+        channelNames = BrainAmpStreamer.split_string(rawdata[12 + 8 * channelCount:])
 
         return channelCount, samplingInterval, resolutions, channelNames
 
@@ -159,24 +140,24 @@ class DataCollect(object):
         # read from tcpip socket
 
         # Extract numerical data
-        (block, points, markerCount) = unpack('<LLL', rawdata[:12])
+        (block, points, markerCount) = struct.unpack('<LLL', rawdata[:12])
 
         # Extract eeg data as array of floats
         data = []
         for i in range(points * num_channels):
             index = 12 + 4 * i
-            value = unpack('<f', rawdata[index:index+4])
+            value = struct.unpack('<f', rawdata[index:index+4])
             data.append(value[0])
 
         # Extract markers
         markers = []
         index = 12 + 4 * points * num_channels
         for m in range(markerCount):
-            markersize = unpack('<L', rawdata[index:index+4])
+            markersize = struct.unpack('<L', rawdata[index:index+4])
 
             ma = Marker()
-            (ma.position, ma.points, ma.channel) = unpack('<LLl', rawdata[index+4:index+16])
-            typedesc = DataCollect.split_string(rawdata[index + 16:index + markersize[0]])
+            (ma.position, ma.points, ma.channel) = struct.unpack('<LLl', rawdata[index+4:index+16])
+            typedesc = BrainAmpStreamer.split_string(rawdata[index + 16:index + markersize[0]])
             ma.type = typedesc[0]
             ma.description = typedesc[1]
 
@@ -197,7 +178,7 @@ class DataCollect(object):
                 channel_count, sampling_interval, resolutions, channel_names, channel_dict, meta_info_str = self.first_message_actions(raw_data)
             elif msgtype == 4:
                 # Data message, extract data and markers
-                (block, points, marker_count, data, markers) = DataCollect.get_data(raw_data, channel_count)
+                (block, points, marker_count, data, markers) = BrainAmpStreamer.get_data(raw_data, channel_count)
 
                 if self.data_index == 1:
                     print "Length of packet:", len(data)
@@ -205,8 +186,8 @@ class DataCollect(object):
                 data_recieve_time = time.time()
                 self.data_index += 1  # Increase our sample counter
 
-                EEG_INDEX.EEG_INDEX = self.data_index
-                EEG_INDEX.EEG_INDEX_2 = self.data_index
+                EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
+                EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
 
                 ######################
                 # Check for overflow #
@@ -299,7 +280,7 @@ class DataCollect(object):
         :return:
         """
         # Start message, extract eeg properties and display them
-        (channel_count, sampling_interval, resolutions, channel_names) = DataCollect.get_properties(raw_data)
+        (channel_count, sampling_interval, resolutions, channel_names) = BrainAmpStreamer.get_properties(raw_data)
         # reset block counter
         self.last_block = -1
 
@@ -307,7 +288,6 @@ class DataCollect(object):
         meta_info_str = "Subject Name:\t" + str(self.subject_name) + \
                         "Subject Tracking Number:\t" + str(self.subject_number) + \
                         "Experiment Number:\t" + str(self.experiment_number) + \
-                        "Data Save Location:\t" + str(self.subject_data_path) + \
                         "Number of channels:\t" + str(channel_count) + '\n' + \
                         "Sampling interval:\t" + str(sampling_interval) + 'microseconds (' + str(sampling_interval_seconds) + ' seconds)\n' + \
                         'Sampling Frequency:\t' + str(1.0 / sampling_interval_seconds) + ' Hz\n' + \
@@ -321,15 +301,15 @@ class DataCollect(object):
 
     def get_raw_data(self):
         # Get message header as raw array of chars
-        raw_hdr = DataCollect.recv_data(self.con, 24)
+        raw_hdr = BrainAmpStreamer.recv_data(self.con, 24)
 
         # Split array into usefull information id1 to id4 are constants
-        (id1, id2, id3, id4, msgsize, msgtype) = unpack('<llllLL', raw_hdr)
+        (id1, id2, id3, id4, msgsize, msgtype) = struct.unpack('<llllLL', raw_hdr)
 
         # Get data part of message, which is of variable size
-        raw_data = DataCollect.recv_data(self.con, msgsize - 24)
+        raw_data = BrainAmpStreamer.recv_data(self.con, msgsize - 24)
         return raw_data, msgsize, msgtype
 
 if __name__ == '__main__':
-    dc = DataCollect('Placeholder', ['C3', 'C4'], Queue.Queue())
+    dc = BrainAmpStreamer('Placeholder', ['C3', 'C4'], Queue.Queue())
     dc.start_recording()

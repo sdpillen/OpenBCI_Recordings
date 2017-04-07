@@ -29,9 +29,9 @@ from struct import *
 import time
 import Queue
 import threading
-import EEGDataSaver
+import EEGInterface.EEGDataSaver
 import numpy as np
-import EEG_INDEX
+import EEGInterface.EEG_INDEX
 
 
 
@@ -64,7 +64,7 @@ class BrainAmpSyntheticDataGenerator(object):
             self.data_save_queue = None
         else:
             self.data_save_queue = Queue.Queue()
-            threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
+            threading.Thread(target=lambda: EEGInterface.EEGDataSaver.start_eeg_data_saving(subject_data_path, self.data_save_queue, header=None)).start()
 
 
         self.subject_data_path = subject_data_path
@@ -99,8 +99,8 @@ class BrainAmpSyntheticDataGenerator(object):
             data_recieve_time = time.time()
             self.data_index += 1  # Increase our sample counter
 
-            EEG_INDEX.EEG_INDEX = self.data_index
-            EEG_INDEX.EEG_INDEX_2 = self.data_index
+            EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
+            EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
 
             ###################
             # Handle the Data #

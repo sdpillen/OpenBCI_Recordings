@@ -5,6 +5,7 @@ import EEGInterface.EEGInterfaceParent
 import Queue
 import threading
 import EEGInterface.EEGDataSaver as EEGDataSaver
+import time
 
 
 class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
@@ -106,11 +107,13 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
             if data_to_put_on_queue is not None:
 
-                data_str = str(self.overall_data_index) + ',' + str(id_val) + ',' + ','.join([str(xx) for xx in data_to_put_on_queue])
+                data_str = str(self.overall_data_index) + ',' + str(time.time()) + ',' + ','.join([str(xx) for xx in data_to_put_on_queue])
 
                 if self.include_aux_in_save_file:
                     data_str += ',' + ','.join([str(yy) for yy in aux_data])
-                self.data_save_queue.put(data_str + '\n')
+
+                # Data put on the data save queue is a len three tuple.
+                self.data_save_queue.put((None, None, data_str + '\n'))
 
         # Set our two EEG INDEX parameters.
         EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
@@ -126,6 +129,6 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
 if __name__ == '__main__':
     data_save_queue = Queue.Queue()
-    obs = OpenBCIStreamer(out_buffer_queue=None, data_save_queue=data_save_queue)
+    obs = OpenBCIStreamer(out_buffer_queue=None, data_save_queue=data_save_queue, port="COM5")
     threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='./sample.csv', queue=data_save_queue, header="Sample Header")).start()
     obs.start_open_bci_streamer()

@@ -202,6 +202,11 @@ This provides a very long, complicated error message.  The portion shown below i
     the board. Make sure both are on and that the dongle actually belongs
     to the board (ie, they didn't get mixed up)
 
+    This could also mean that the COM port was entered incorrectly and my
+    script autodetect the wrong one (not sure why this happens sometimes,
+    please do fix it if you figure out why).
+
+
 * BrainAmp Disconnect/Software not on
     
     Ensure that the proprietary BrainAmp software is running and the BrainAmp system is fully conenected (see Documentation folder for more details)

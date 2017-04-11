@@ -577,5 +577,5 @@ def print_data(sample):
 
 
 if __name__ == '__main__':
-    qboard = OpenBCIBoard(port='COM0')
+    qboard = OpenBCIBoard(port='COM5')
     qboard.start_streaming(print_data)

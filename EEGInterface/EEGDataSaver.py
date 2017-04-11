@@ -4,6 +4,7 @@ This file is for saving EEG Data
 
 import CCDLUtil.DataManagement.StringParser as StringParser
 
+
 def start_eeg_data_saving(save_data_file_path, queue, header=None):
     """
 
@@ -22,8 +23,7 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None):
                         This can be a string or a number.
                 - Data
                     A list of data points in the form [chan 1, chan 2...], where chan X is a number.
-
-                If time or index is None, we'll write data to file as is (with a new line appended)
+                    If data is a list, it will be comma separated.  If data is a string, we'll write it to file as it was provided to us.
 
             Data save format.
                 Data will be saved in the comma separated format:
@@ -46,17 +46,20 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None):
     while True:
         # get our components
         index, t, data = queue.get()
-        if index is None or t is None:
-            # Append a newline if needed.
-            f.write(StringParser.idempotent_append_newline(str(data)))
-        else:
-            # Write our index and timestamp
-            f.write(str(index) + ',' + str(t))
-            # convert our data to strings
+        index = '' if index is None else str(index) + ','
+        t = '' if t is None else str(t) + ','
+        if type(data) is list:
+            # convert our data items to strings
             data = map(str, data)
             # convert our data to a comma separated string
-            f.write(','.join(data))
-            # Write a new line character
-            f.write('\n')
-            # Flush our buffer
-            f.flush()
+            data = ','.join(data)
+        else:
+            if type(data) is not str:
+                raise TypeError("Invalid data type -- data must be either string or ")
+        # add a newline if needed.  Commas are already accounted for
+        data_str = str(index) + str(t) + StringParser.idempotent_append_newline(data)
+
+        # Write our index and timestamp
+        f.write(data_str)
+        # Flush our buffer
+        f.flush()

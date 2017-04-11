@@ -7,7 +7,7 @@ analysis of noninvasive BCI (EEG and TMS) experiments.  This module contains scr
 ranging from experimental setup to data analysis.
 
 It is important that all code committed to this repository is:
-    
+
     1) Heavily commented, such that it a function can be understood someone without reading the code. At minimum, 
            please provide docstrings (comments detailing what a function does) to every funtions written, no matter how basic.
     2) Well maintained - please only commit code that is predominantly PEP8 complient
@@ -159,14 +159,14 @@ See the "Error Messages" section below to see markers of this error.
 
 ## Common Error Messages
 
-1. This error means that you are accessing a wxpython object in an unsafe manner. Make sure to use locks, even if you are running everything in the same thread.
+* This error means that you are accessing a wxpython object in an unsafe manner. Make sure to use locks, even if you are running everything in the same thread.
 wxpython does some threading automatically and they did not make their code thread safe.
 
 
             1. Pango:ERROR:/build/pango1.0-_EsyGA/pango1.0-1.40.1/./pango/pango-layout.c:3925:pango_layout_check_lines: assertion failed: (!layout->log_attrs)
 
 
-2. This error likely comes from specifying the directory and not the specific file for loading a TF object.
+* This error likely comes from specifying the directory and not the specific file for loading a TF object.
 This provides a very long, complicated error message.  The portion shown below is the last segment.
 
 
@@ -176,7 +176,7 @@ This provides a very long, complicated error message.  The portion shown below i
              [[Node: save/restore_slice = RestoreSlice[dt=DT_FLOAT, preferred_shard=-1,
              _device="/job:localhost/replica:0/task:0/cpu:0"](_recv_save/Const_0, save/restore_slice/tensor_name, save/restore_slice/shape_and_slice)]]
 
-3. This error likely comes about from not stripping off a trailing comma in some versions of data collected from the brain amp system.
+* This error likely comes about from not stripping off a trailing comma in some versions of data collected from the brain amp system.
     ** The new method takes care of this.
 
         3.File "/DataInterface/Utility/FileParser.py", line 118, in iter_func
@@ -184,7 +184,7 @@ This provides a very long, complicated error message.  The portion shown below i
         ValueError: could not convert string to float:
 
 
-4. OpenBCI Disconnect
+* OpenBCI Disconnect
 
 
         WARNING:root:Skipped 46 bytes before start found
@@ -194,7 +194,15 @@ This provides a very long, complicated error message.  The portion shown below i
         WARNING:root:Skipped 466 bytes before start found
         'NoneType' object has no attribute 'channel_data' 'NoneType' object has no attribute 'channel_data'
 
-5. BrainAmp Disconnect/Software not on
+* OpenBCI - Communication Problems
+
+    WARNING:root:No Message
+
+    This means there is a communication problem between the dongle and
+    the board. Make sure both are on and that the dongle actually belongs
+    to the board (ie, they didn't get mixed up)
+
+* BrainAmp Disconnect/Software not on
     
     Ensure that the proprietary BrainAmp software is running and the BrainAmp system is fully conenected (see Documentation folder for more details)
     Otherwise, this is the common error message:

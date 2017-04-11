@@ -1,9 +1,10 @@
 import OpenBCIHardwareInterface as BciHwInter
-import time
 import Utility.SystemInformation as SystemInfo
 import EEGInterface.EEG_INDEX
 import EEGInterface.EEGInterfaceParent
-import os
+import Queue
+import threading
+import EEGInterface.EEGDataSaver as EEGDataSaver
 
 
 class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
@@ -67,7 +68,6 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
         :param data_packet:  Data as taken from the OpenBCI board.  This is generally an OpenBCI sample object.
         """
 
-
         try:
             data = data_packet.channel_data  #  List of data points
             self.overall_data_index += 1     # overall_data_index starts at -1, thus our data is always indexed >= 0 by incrementing here instead of at the end of the method.
@@ -122,3 +122,10 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
         """
         board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
         board.start_streaming(self.write_file_callback)
+
+
+if __name__ == '__main__':
+    data_save_queue = Queue.Queue()
+    obs = OpenBCIStreamer(out_buffer_queue=None, data_save_queue=data_save_queue)
+    threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='./sample.csv', queue=data_save_queue, header="Sample Header")).start()
+    obs.start_open_bci_streamer()

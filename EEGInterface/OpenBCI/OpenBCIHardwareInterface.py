@@ -1,5 +1,7 @@
 """
-
+Running this file (ie python OpenBCIHardwareInterface.py) will print all the samples to console.
+This has been tested, so if there is a problem running this script, then the problem is likely with OpenBCI
+itself.
 
 This is the core OpenBCI object for handling connections and samples from the board.  For client use,
 please use the OpenBCIStreamer, which provides a wrapper for this object.
@@ -575,5 +577,5 @@ def print_data(sample):
 
 
 if __name__ == '__main__':
-    qboard = OpenBCIBoard(port='/dev/ttyUSB0')
+    qboard = OpenBCIBoard(port='COM0')
     qboard.start_streaming(print_data)

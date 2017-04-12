@@ -40,6 +40,9 @@ This module (and nearly all complex programs) require multithreading/multiproces
 Here is a link to the api for threading:
 https://docs.python.org/2/library/threading.html
 
+Here is a quick intro to multithreading:
+https://pymotw.com/2/threading/
+
 Here is a link to the api for multiprocessing (this is intended to have
 the same face as the threading module, but different 'under the hood'
 characteristics -- use a multiprocessing.queue() for

@@ -1,14 +1,14 @@
 import OpenBCIHardwareInterface as BciHwInter
-import Utility.SystemInformation as SystemInfo
-import EEGInterface.EEG_INDEX
-import EEGInterface.EEGInterfaceParent
+import CCDLUtil.Utility.SystemInformation as SystemInfo
+import CCDLUtil.EEGInterface.EEG_INDEX
+import CCDLUtil.EEGInterface.EEGInterfaceParent
 import Queue
 import threading
-import EEGInterface.EEGDataSaver as EEGDataSaver
+import CCDLUtil.EEGInterface.EEGDataSaver as EEGDataSaver
 import time
 
 
-class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
+class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     def __init__(self, out_buffer_queue, channels_for_live='All', channels_for_save='All', include_aux_in_save_file=True, data_save_queue=None, subject_name=None,
                  subject_tracking_number=None, experiment_number=None, channel_names=None, port=None, baud=115200):
@@ -43,6 +43,7 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
         self.channels_for_save = channels_for_save
         self.include_aux_in_save_file = include_aux_in_save_file
         self.overall_data_index = 0
+        self.channels_for_live = channels_for_live
 
         # Set our port to default if a port isn't passed
         self.port = OpenBCIStreamer.get_default_port() if port is None else port
@@ -93,6 +94,7 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
                 self.out_buffer_queue.put(trimmed_data)
             else:
                 if self.channels_for_live is not None:
+
                     raise ValueError('Invalid channels_for_live value.')
 
         if self.data_save_queue is not None:
@@ -107,7 +109,7 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
             if data_to_put_on_queue is not None:
 
-                data_str = str(self.overall_data_index) + ',' + str(time.time()) + ',' + ','.join([str(xx) for xx in data_to_put_on_queue])
+                data_str = str(id_val) + ',' + str(time.time()) + ',' + ','.join([str(xx) for xx in data_to_put_on_queue])
 
                 if self.include_aux_in_save_file:
                     data_str += ',' + ','.join([str(yy) for yy in aux_data])
@@ -116,8 +118,9 @@ class OpenBCIStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
                 self.data_save_queue.put((None, None, data_str + '\n'))
 
         # Set our two EEG INDEX parameters.
-        EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
-        EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.overall_data_index
+        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
+        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.overall_data_index
+        CCDLUtil.EEGInterface.EEG_INDEX.EEG_ID_VAL = id_val
 
     def start_open_bci_streamer(self):
         """

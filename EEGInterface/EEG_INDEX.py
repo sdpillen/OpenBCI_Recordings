@@ -6,3 +6,4 @@ been an issue for me (in a lot of data collection).
 """
 CURR_EEG_INDEX = 0
 CURR_EEG_INDEX_2 = 0
+EEG_ID_VAL = 0

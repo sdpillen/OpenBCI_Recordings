@@ -160,7 +160,19 @@ See the "Error Messages" section below to see markers of this error.
         3) Select the correct touchscreen
 
 
-## Common Error Messages
+## Common Error Messages / Troubleshooting
+
+* Problems Importing
+This should be resolved, but if there is a problem with some of the scripts in this module failing to import,
+change the scripts to import from CCDLUtil.Module.Script.  As all of the CCDLUtil repo was in the working path when first developed,
+there may be some remaining import Module.Script commands, which will fail if imported from another working
+path.  As said before, this should be fixed already, but if I missed it in a few spots, please let me know
+
+Other importing problems - This module was originally named DLUtil. Because of this, it is possible
+that when cloning the module, it will clone into a folder called DLUtil. This needs to be CCDLUtil 
+in order to work.
+
+
 
 * This error means that you are accessing a wxpython object in an unsafe manner. Make sure to use locks, even if you are running everything in the same thread.
 wxpython does some threading automatically and they did not make their code thread safe.
@@ -217,4 +229,8 @@ This provides a very long, complicated error message.  The portion shown below i
     
 
         No connection could be made because the target machine actively refused it
-    
+
+# Other / Misc.
+
+* Zero based indexing versus 1 based indexing: 
+http://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html

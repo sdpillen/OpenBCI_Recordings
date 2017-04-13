@@ -3,7 +3,8 @@ This file is for generic operations related to matrix and dictionary manipulatio
 """
 
 import numpy as np
-import Utility.AssertVal as AV
+import CCDLUtil.Utility.AssertVal as AV
+import CCDLUtil.DataManagement.ArrayParser as CCDLArrayParser
 import time
 import bisect
 import ast
@@ -110,3 +111,22 @@ def trim_freqs(freqs, density, high=None, low=None):
     # Ensure each density pos has a corresponding freq.
     AV.assert_equal(len(freqs), density.shape[1])
     return freqs, density
+
+def convert_start_end_index_lists_to_single_duration_trials(start_trial_index, end_trial_index):
+    """
+    Takes two lists of start and end indexes and returns a new end trial index list that ensures
+    that all epochs will be the same duration. The duration used is the minimum duration between
+    corresponding entries in the lists
+    
+    Example:
+        start_trial_index = [0, 50, 100] 
+        end_trial_index = [10, 60, 109]
+        
+        returns -> [9, 59, 109]
+    
+    :param start_trial_index: Indexes marking the start of trials
+    :param end_trial_index: Indexes marking the end of trials.
+    :return: List of new end trial indexes that is equal to the start index list + the minimum duration
+    """
+    AV.assert_equal(len(start_trial_index), len(end_trial_index))
+    return CCDLArrayParser.convert_ununiform_start_stop_lists_to_uniform_start_stop_lists(start_lst=start_trial_index, stop_lst=end_trial_index)

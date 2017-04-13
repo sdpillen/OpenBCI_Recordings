@@ -5,8 +5,7 @@ This takes data from a queue and writes it to disk.  This is typically event dat
 an experiment (not EEG data).
 
 """
-import StringParser
-
+import CCDLUtil.DataManagement.StringParser
 
 class Log(object):
 

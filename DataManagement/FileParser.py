@@ -3,7 +3,7 @@ import pickle
 import os
 import argparse
 import numpy as np
-import Utility.AssertVal as AV
+import CCDLUtil.Utility.AssertVal as AV
 import time
 import bisect
 import ast
@@ -128,7 +128,7 @@ def iter_loadtxt(filename, delimiter=',', skiprows=0, dtype=float):
                     try:
                         yield dtype(item)
                     except ValueError:
-                        # Most likely cause of an error here is a problem with an trailing deliniator.
+                        # Most likely cause of an error here is a problem with a trailing deliniator.
                         print item, type(item)
                         raise
         iter_loadtxt.rowlength = line_len

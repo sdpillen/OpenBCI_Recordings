@@ -5,7 +5,7 @@ For matrix manipulation and dict manipulation, see DataParser.py.
 """
 
 import numpy as np
-import Utility.AssertVal as AV
+import CCDLUtil.Utility.AssertVal as AV
 
 
 def extract_min_difference_in_list(lst):

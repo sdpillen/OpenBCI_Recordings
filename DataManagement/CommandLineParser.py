@@ -6,7 +6,7 @@ import argparse
 import os
 import time
 
-from DataManagement import FileParser as FP
+from CCDLUtil.DataManagement import FileParser as FP
 
 
 def command_line_with_default_values(default_val_dict):

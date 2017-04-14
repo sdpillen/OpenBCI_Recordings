@@ -293,7 +293,7 @@ class CursorTask(object):
         self.background_color_key = self.CURSOR_BKGRND
 
     def set_to_block_game_background(self):
-        self.background_color_key = self.
+        self.background_color_key = self.CURSOR_BKGRND
 
     def set_to_crosshair_background_color(self):
         """

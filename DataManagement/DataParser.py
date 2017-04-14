@@ -54,7 +54,18 @@ def stack_epochs(existing, new_trial):
     """
     return new_trial if existing is None else np.concatenate((existing, new_trial), axis=0)
 
-
+def stack_data_values(existing, value_to_stack, axis):
+    """
+    A general case of stack_epochs, where we stack along the specified axis
+    
+    If existing is none, we return value_to_stack
+    
+    :param existing: Our existing numpy array
+    :param stacked_value: Our value we want to stack.  Must match in the axis dimension to existing
+    :param axis: Axis to stack on
+    :return: Our stacked data
+    """
+    return new_trial if existing is None else np.concatenate((existing, new_trial), axis=axis)
 
 def average_density_over_epochs(density):
     """

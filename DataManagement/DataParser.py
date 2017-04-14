@@ -65,7 +65,7 @@ def stack_data_values(existing, value_to_stack, axis):
     :param axis: Axis to stack on
     :return: Our stacked data
     """
-    return new_trial if existing is None else np.concatenate((existing, new_trial), axis=axis)
+    return value_to_stack if existing is None else np.concatenate((existing, value_to_stack), axis=axis)
 
 def average_density_over_epochs(density):
     """

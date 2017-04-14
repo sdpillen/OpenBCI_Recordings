@@ -83,15 +83,19 @@ def average_density_over_epochs(density):
 def trim_freqs(freqs, density, high=None, low=None):
     """
     Takes freqs and density and trims them according to the high and low values.
-    :param freqs: freqs
+    
+    if freqs = [ 10.  11.  12.  13.  14. 15. 16]
+    and trim freqs is called on this list with high=15 and low=10,
+    the result would be [ 10.  11.  12.  13.  14.]
+    
+    :param freqs: freqs (numpy array)
     :param density: density (shape epoch sample channel)
-    :param high: removes all freqs above this val (inclusive). Cast to int if passed a float.
-    :param low: removes all freqs below this val (inclusive).  Cast to int if passed a float.
+    :param high: removes all freqs above and equal to this val . Cast to int if passed a float.
+    :param low: removes all freqs below this val.  Cast to int if passed a float.
     :return: freqs, density
             Both elements are modified. Lenght of freqs is equal to the size of the first axis of density (samples).
     """
     original_num_samples = density.shape[1]
-    assert len(density.shape) == 3
     if high is None and low is None:
         raise ValueError('High or low must be an int')
 
@@ -100,12 +104,18 @@ def trim_freqs(freqs, density, high=None, low=None):
 
         index_of_high = bisect.bisect_left(a=freqs, x=high)
         freqs = freqs[:index_of_high]
-        density = density[:, :index_of_high, :]
+        try:
+            density = density[:, :index_of_high, :]
+        except IndexError:
+            density = density[:, :index_of_high]
     if low is not None:
         low = int(low)
         index_of_low = bisect.bisect_left(a=freqs, x=low)
         freqs = freqs[index_of_low:]
-        density = density[:, index_of_low:, :]
+        try:
+            density = density[:, index_of_low:, :]
+        except IndexError:
+            density = density[:, index_of_low:]
     # Assure we trimmed something
     AV.assert_not_equal(original_num_samples, density.shape[1])
     # Ensure each density pos has a corresponding freq.
@@ -130,3 +140,52 @@ def convert_start_end_index_lists_to_single_duration_trials(start_trial_index, e
     """
     AV.assert_equal(len(start_trial_index), len(end_trial_index))
     return CCDLArrayParser.convert_ununiform_start_stop_lists_to_uniform_start_stop_lists(start_lst=start_trial_index, stop_lst=end_trial_index)
+
+
+def reepoch_data_with_fixed_window_size(epoched_data, labels, window_size):
+    """
+    For especially long epochs, we can make them into multiple smaller epochs - and thus have more data to play with
+    This takes an np array of epoched data - shape (epoch, sample, channel) and returnes a new np array of shape
+    (epoch, sample -- of len window_size, channel) where the num epochs and num samples are different than epoched_data
+    Number of channels is unaffected. This transformation is determined by window size.
+
+    A new np array is returned. epoched_data is unmodified.
+
+    Additionally, as we are altering the data array, we will need to change the size of the labels to accommodate.
+
+    :param epoched_data: Original epoched data - shape (epoch, sample, channel)
+    :param labels: np array of labels for our data - shape (epoch,)
+    :param window_size: Size of desired window (samples)
+    :return: transformed epoch data of - shape (new epoch num, new num sample, channel)
+    """
+
+    # Get some initial parameters
+    original_num_epoch = epoched_data.shape[0]
+    block_dur = epoched_data.shape[1]
+    num_channels = epoched_data.shape[2]
+    # epoched_data.shape -> (num epoch, samples, channels), ie. (32, 4514, 31)
+
+    windows_per_epoch = int(block_dur / window_size)
+    # pre allocate space for our new epochs (This is to save time from multiple np concats).
+    # Shape is (num new epochs, epoch samples, num channels)  ie. (1184, 120, 31)
+    new_data = np.zeros(shape=(windows_per_epoch * original_num_epoch, window_size, num_channels))
+    for epoch_index in xrange(0, epoched_data.shape[0]):
+        for sample_offset, sample_index in enumerate(xrange(0, block_dur, window_size)):
+            # We ran off the edge of our data.  Move onto the next epoch
+            if sample_index + window_size >= block_dur: continue
+
+            # Get the new epoch
+            new_epoch = epoched_data[epoch_index, sample_index:sample_index + window_size, :]
+            assert new_epoch.shape[0] == window_size, '%d, %d' % (new_epoch.shape[0], window_size)
+
+            new_data[epoch_index * windows_per_epoch + sample_offset, :, :] = new_epoch
+
+    # Reshape our labels
+    if labels is not None:
+        new_labels = []
+        for label in labels:
+            new_labels += [label] * windows_per_epoch
+        labels = np.asarray(new_labels)
+
+    # Return our newly reepoched data - shape (epoch, sample, channel)
+    return new_data, labels, windows_per_epoch

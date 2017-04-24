@@ -230,7 +230,15 @@ This provides a very long, complicated error message.  The portion shown below i
 
         No connection could be made because the target machine actively refused it
 
-# Other / Misc.
+# Running 20 Questions
 
+Please see Documentation/gUSBAmp for how to set up the hardware.
+
+Use ActiCap software to monitor impedance.  However, impedences cannot
+be monitored concurrently with data recording.
+
+Please see Documentation/Projects/20Questions for instructions on how to run this project.
+
+# Other / Misc.
 * Zero based indexing versus 1 based indexing: 
 http://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html

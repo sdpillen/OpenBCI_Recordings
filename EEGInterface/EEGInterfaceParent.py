@@ -67,3 +67,9 @@ class EEGInterfaceParent(object):
         :return: trimmed data list
         """
         return [data[xx] for xx in channel_index_list]
+
+    def start_recording(self):
+        """
+        To be overridden by child
+        """
+        pass

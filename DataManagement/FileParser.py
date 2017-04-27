@@ -151,6 +151,8 @@ def manage_storage(data_storage_location, take_init):
     subject_id = raw_input("Enter Subject Number: ") if take_init else str(0)
     subject_data_foler_path = data_storage_location + 'Subject' + str(subject_id) + '__timestamp_' + str(time.time()) + '/'
     os.mkdir(subject_data_foler_path)
+    
+    # subject_data_folder_path ends with /
     return subject_id, subject_data_foler_path
 
 

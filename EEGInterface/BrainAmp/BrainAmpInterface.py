@@ -217,6 +217,7 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     def handle_out_buffer_queue(self, data, resolutions, channel_count, channel_dict):
         """
+        Puts every 10th sample on the out_queue (downsampling to 500 Hz)
         Number of channels: 32
         Sampling Rate [Hz]: 5000
         Sampling Interval [micro seconds]: 200  (0.0002 seconds; 5000 Hz)

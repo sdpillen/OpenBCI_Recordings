@@ -51,6 +51,10 @@ class EEGInterfaceParent(object):
 
         self.put_data_on_out_queue_flag = False
         self.channels_for_live = channels_for_live
+        if type(self.channels_for_live) is str:
+            self.channels_for_live = self.channels_for_live.lower()
+            if self.channels_for_live != 'all':
+                raise ValueError('Invalid channels_for_live parameter')
         self.data_save_queue = data_save_queue
 
 

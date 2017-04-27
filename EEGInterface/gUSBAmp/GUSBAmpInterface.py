@@ -1,4 +1,3 @@
-
 # needs socket and struct library
 import socket
 import struct
@@ -15,7 +14,7 @@ import pylsl
 class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
-    def __init__(self, channels_for_live, out_buffer_queue, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
+    def __init__(self, channels_for_live, out_queue, put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
         """
         A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
 
@@ -25,10 +24,10 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
             Use this to time mark events in your other programs.
 
-        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [], no channels will be put on the out_buffer_queue.
+        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [] or None, no channels will be put on the out_buffer_queue.
                                   If 'All', all channels will be placed on the out_buffer_queue.
         :param data_save_queue: queue to put data to save.  If None, data will not be saved.
-        :param out_buffer_queue: The channel listed in the channels_for_live parameter will be placed on this queue. This is intended for live data analysis.
+        :param out_queue: The channel listed in the channels_for_live parameter will be placed on this queue. This is intended for live data analysis.
                                  If None, no data will be put on the queue.
                                  Items put on the out buffer queue will be a numpy array (though this can be either a 2D or a 1D numpy array)
         :param subject_name: Optional -- Name of the subject. Defaults to 'None'
@@ -39,8 +38,8 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
         # Call our EEGInterfaceParent init method.  Channels_for_live is converted to lower case in super call if it is a string.
-        super(GUSBAmpStreamer, self).__init__(channels_for_live, out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
-                                               subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
+        super(GUSBAmpStreamer, self).__init__(channels_for_live, out_queue, data_save_queue=data_save_queue, put_data_on_out_queue_flag=put_data_on_out_queue_flag,
+                                              subject_name=subject_name, subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
 
         # first resolve an EEG stream on the lab network
         print "looking for an EEG stream..."
@@ -59,8 +58,6 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         while True:
             sample, timestamp = self.inlet.pull_sample()
             # Get the time we collected the sample
-            data_recieve_time = time.time()
-
             self.data_index += 1  # Increase our sample counter
 
             CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
@@ -72,10 +69,10 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
             ###################
             # Save the Data - We put data on the queue to be saved - format for queue (index, time, data)
             if self.data_save_queue is not None:
-                self.data_save_queue.put((self.data_index, data_recieve_time, sample))
+                self.data_save_queue.put((self.data_index, timestamp, sample))
 
-
-            if self.put_data_on_out_queue_flag is not None:
+            # Put dota on the out queue
+            if self.put_data_on_out_queue_flag and self.out_queue is not None and self.channels_for_live is not None and self.channels_for_live != []:
                 # Only put on the channels we need.  self.channels_for_live is guaranteed lower case... we'll program defensively
                 if self.channels_for_live == 'all' or self.channels_for_live == 'All' or self.channels_for_live == 'ALL':
                     trimmed_data_for_out_queue = sample
@@ -85,5 +82,5 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
 if __name__ == '__main__':
-    dc = GUSBAmpStreamer(channels_for_live='All', out_buffer_queue=Queue.Queue, data_save_queue=None)
+    dc = GUSBAmpStreamer(channels_for_live='All', out_queue=Queue.Queue, data_save_queue=None)
     dc.start_recording()

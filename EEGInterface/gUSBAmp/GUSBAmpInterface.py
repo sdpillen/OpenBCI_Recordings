@@ -14,6 +14,7 @@ import pylsl
 class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
+
     def __init__(self, channels_for_live, out_queue, put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
         """
         A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
@@ -49,21 +50,27 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         print "Creating inlet..."
         self.inlet = pylsl.StreamInlet(self.streams[0])
 
+        self.current_index = 0
+
     def start_recording(self):
         """
         Start our recording
         """
+        parity = 0
         print "Starting recording..."
         # ##### Main Loop #### #
         while True:
             sample, timestamp = self.inlet.pull_sample()
+            parity += 1
+
             # Get the time we collected the sample
             self.data_index += 1  # Increase our sample counter
 
             CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
             CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
+            self.current_index = self.data_index
 
-
+            # print self.data_index, CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX
             ###################
             # Handle the Data #
             ###################

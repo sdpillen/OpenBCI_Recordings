@@ -46,3 +46,9 @@ def assert_epoch_label_shape(epoched_values, labels, message="The number of epoc
     :param message: Message to show if assertion fails.
     """
     assert epoched_values.shape[0] == len(labels), str(message) + '-- Density: %d, Labels: %d' % (epoched_values.shape[0], len(labels))
+
+def assert_is_none(val1, message=''):
+    """
+    Runs assertion and displays value if assertion fails.
+    """
+    assert val1 is None , '%s -- %s' % (str(message), str(val1))

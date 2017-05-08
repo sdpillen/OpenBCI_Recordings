@@ -131,6 +131,8 @@ def trim_freqs(freqs, density, high=None, low=None):
     AV.assert_not_equal(original_num_samples, density.shape[1])
     # Ensure each density pos has a corresponding freq.
     AV.assert_equal(len(freqs), density.shape[1])
+
+    # return the trimmed freqs and trimmed density.
     return freqs, density
 
 def convert_start_end_index_lists_to_single_duration_trials(start_trial_index, end_trial_index):

@@ -8,19 +8,19 @@ import time
 
 def main():
     # Create our two multithread queues.
-    out_queue = Queue.Queue()
+    out_buffer_queue = Queue.Queue()
     data_save_queue = Queue.Queue()
 
     # Create our Data streamer object
-    obs = CCDLStreamer.OpenBCIStreamer(out_buffer_queue=out_queue, data_save_queue=data_save_queue, port="COM5", channels_for_live='all', channels_for_save='all')
+    obs = CCDLStreamer.OpenBCIStreamer(out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, port="COM5", channels_for_live='all', channels_for_save='all')
 
     # Start our data saver in a new thread
     threading.Thread(target=lambda: CCDLDataSaver.start_eeg_data_saving(save_data_file_path='./sample.csv', queue=data_save_queue, header="Sample Header")).start()
 
     # Start our live data analysis in another thread
-    threading.Thread(target=lambda out=out_queue: print_items_from_queue(out)).start()
+    threading.Thread(target=lambda out=out_buffer_queue: print_items_from_queue(out)).start()
 
-    # Start streaming data!  Data will be sent to both the out_queue and data_save_queue
+    # Start streaming data!  Data will be sent to both the out_buffer_queue and data_save_queue
     obs.start_open_bci_streamer()
 
 

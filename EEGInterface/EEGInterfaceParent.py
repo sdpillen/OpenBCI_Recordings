@@ -49,7 +49,7 @@ class EEGInterfaceParent(object):
         self.data_index = -1
 
         # A separate queue (other than the one for storing data) that puts the channels_for_live data points on
-        self.out_queue = out_buffer_queue
+        self.out_buffer_queue = out_buffer_queue
 
         # block counter to check overflows of tcpip buffer
         self.last_block = -1

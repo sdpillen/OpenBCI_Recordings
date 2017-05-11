@@ -25,10 +25,10 @@ import struct
 import time
 import Queue
 import threading
-import EEGInterface.EEGDataSaver
+import CCDLUtil.EEGInterface.EEGDataSaver
 import numpy as np
-import EEGInterface.EEG_INDEX
-import EEGInterface.EEGInterfaceParent
+import CCDLUtil.EEGInterface.EEG_INDEX
+import CCDLUtil.EEGInterface.EEGInterfaceParent
 
 
 class Marker:
@@ -41,7 +41,7 @@ class Marker:
         self.description = ""
 
 
-class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
+class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     """
     A Parent interface that should be inherited other systems that interface with EEG.
@@ -178,7 +178,7 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
                 channel_count, sampling_interval, resolutions, channel_names, channel_dict, meta_info_str = self.first_message_actions(raw_data)
             elif msgtype == 4:
                 # Data message, extract data and markers
-                (block, points, marker_count, data, markers) = BrainAmpStreamer.get_data(raw_data, channel_count)
+                (block, points, marker_count, data, markers) = self.get_data(raw_data, channel_count)
 
                 if self.data_index == 1:
                     print "Length of packet:", len(data)
@@ -186,8 +186,8 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
                 data_recieve_time = time.time()
                 self.data_index += 1  # Increase our sample counter
 
-                EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
-                EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
+                CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
+                CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
 
                 ######################
                 # Check for overflow #
@@ -217,7 +217,7 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
 
     def handle_out_buffer_queue(self, data, resolutions, channel_count, channel_dict):
         """
-        Puts every 10th sample on the out_queue (downsampling to 500 Hz)
+        Puts every 10th sample on the out_buffer_queue (downsampling to 500 Hz)
         Number of channels: 32
         Sampling Rate [Hz]: 5000
         Sampling Interval [micro seconds]: 200  (0.0002 seconds; 5000 Hz)
@@ -247,7 +247,7 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
             channel_data = [data[index + channel_index] * resolution for index in indexes_needed]
             channels[:, ii] = np.asarray(channel_data)
         # Put our numpy array of channels on the queue.  Channels shape -> [samples (10), channel]
-        self.out_queue.put(channels)
+        self.out_buffer_queue.put(channels)
 
     @staticmethod
     def print_marker_count(markers, marker_count):
@@ -312,5 +312,5 @@ class BrainAmpStreamer(EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
         return raw_data, msgsize, msgtype
 
 if __name__ == '__main__':
-    dc = BrainAmpStreamer('Placeholder', ['C3', 'C4'], Queue.Queue())
+    dc = BrainAmpStreamer(Queue.Queue(), ['C3', 'C4'], Queue.Queue())
     dc.start_recording()

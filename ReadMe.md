@@ -161,7 +161,7 @@ See the "Error Messages" section below to see markers of this error.
 
 
 ## Common Error Messages / Troubleshooting
-
+[C:\Python27\Lib\site-packages\CCDLUtil\DataManagement](C:%5CPython27%5CLib%5Csite-packages%5CCCDLUtil%5CDataManagement)
 * Problems Importing
 This should be resolved, but if there is a problem with some of the scripts in this module failing to import,
 change the scripts to import from CCDLUtil.Module.Script.  As all of the CCDLUtil repo was in the working path when first developed,

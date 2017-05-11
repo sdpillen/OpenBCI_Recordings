@@ -1,6 +1,17 @@
+"""
+This file is for communicating with the LED lights.
+
+Note that some methods may take on the order of seconds to run.
+
+The assumption is that this is run with the code in the SSVEP_2_LED/SSVEP_2_LED.ino script
+loaded on the ardunio uno baord.
+
+"""
+
 import serial
 import time
 import CCDLUtil.Utility.AssertVal as CCDLAssert
+
 
 class Arduino2LightInterface(object):
 
@@ -12,7 +23,9 @@ class Arduino2LightInterface(object):
     LIGHT_3_DEACTIVATE_MSG = '5'
     LIGHT_4_DEACTIVATE_MSG = '6'
 
-    VALID_MESSAGES = set(map(str, range(0, 7)))
+    VALID_ARDUINO_MESSAGES = set(map(str, range(0, 7)))
+
+    CLOSE_PORT = 'close_port'
 
     def __init__(self, com_port, default_on=False, serial_init_post_delay=2.0, default_on_delay=0.0):
         """
@@ -61,7 +74,7 @@ class Arduino2LightInterface(object):
             time.sleep(delay2)
             return_msg = self.ser.read(self.ser.inWaiting())  # read all characters in buffer
             return return_msg
-        if msg not in self.VALID_MESSAGES:
+        if msg not in self.VALID_ARDUINO_MESSAGES:
             raise ValueError('The message must be valid')
         msg = bytearray(msg, 'ascii')
 
@@ -74,6 +87,21 @@ class Arduino2LightInterface(object):
                 print "Arduino Message delivered"
             else:
                 raise RuntimeError('Arduino communication disrupted.')
+
+    def read_from_queue(self, queue):
+        """
+        Runs infinitely, taking messages from a queue for what to write to the arduino board.
+        If passes a close port message, it will close the port and cease running.
+        :param queue: queue to read messages from
+        """
+
+        while True:
+            message = queue.get()
+            if message == self.CLOSE_PORT:
+                self.close_port()
+                return
+            else:
+                self.write(msg=message)
 
     def close_port(self):
         """

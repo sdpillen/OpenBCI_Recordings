@@ -31,7 +31,7 @@ class MovingWindowBuffer(object):
                                     the buffer_queue
                                 
         :param out_queue:  Queue to place data on after the buffer reaches moving_window_size.
-        :param update_interval: On ever update_interval samples, the pervious moving_window_size samples are placed on the out_queue
+        :param update_interval: On ever update_interval samples, the pervious moving_window_size samples are placed on the out_buffer_queue
         :param internal_buffer_size: The size to make the buffer internally.  If none, will be set to 20 * moving_window_size. Defaults to None
         """
         if internal_buffer_size is None:
@@ -45,7 +45,7 @@ class MovingWindowBuffer(object):
 
     def start_buffer(self):
         """
-         Starts the buffer, reading from buffer_queue and writing to out_queue
+         Starts the buffer, reading from buffer_queue and writing to out_buffer_queue
          once the buffer reaches moving_window_size.  Once the buffer reaches moving_window_size and is placed on the
          queue, the buffer is cleared.
         """
@@ -133,7 +133,7 @@ class NonOverlappingBuffer(object):
         A channel is a dimension along the data read from the buffer queue.
 
         This nonoverlapping buffer stores moving_window_size samples and, once moving_window_size is reached, it places
-        the results on the out_queue and flushes the buffer.
+        the results on the out_buffer_queue and flushes the buffer.
         :param capacity:  The number of samples to save to the buffer.
         :param num_channels:  Number of channels of data (ie. size of the list placed on the buffer_queue)
         :param buffer_queue:  Buffer queue is the origin of the data.
@@ -148,7 +148,7 @@ class NonOverlappingBuffer(object):
 
     def start_buffer(self):
         """
-         Starts the buffer, reading from buffer_queue and writing to out_queue
+         Starts the buffer, reading from buffer_queue and writing to out_buffer_queue
          once the buffer reaches moving_window_size.  Once the buffer reaches moving_window_size and is placed on the
          queue, the buffer is cleared.
         """

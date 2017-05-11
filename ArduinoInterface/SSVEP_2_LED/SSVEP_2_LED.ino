@@ -1,5 +1,7 @@
 // Witten May 11, 2017 - Written to be used with the Arduino2LightInterface.py file in CCDLUtil
 
+// For convetion, LED3 should always be the LEFT light.
+
 // "Pins 0 and 1 are used for serial communications. It's really not possible to use pins 0 and 1 for external circuitry 
 //    and still be able to utilize serial communications or to upload new sketches to the board."
 
@@ -15,24 +17,28 @@ const unsigned char LIGHT_4_ACTIVATE_MSG = 4;
 const unsigned char LIGHT_3_DEACTIVATE_MSG = 5;
 const unsigned char LIGHT_4_DEACTIVATE_MSG = 6;
 
+// Values used in 20 Questions:
 // 38 = Yes = 13 Hz
 // 42 = No = 12 Hz
 // 500 = 1 Hz for testing
-const unsigned long LED3_interval = 29; // Interval between on and off in ms
 
+// Other values:
 // 17 Hz = 29
 // 13 Hz = 38
 // 7 hz = 71
 // 5 hz = 100
-const unsigned long LED4_interval = 38; 
+
+// Interval that the light remains on (and off) when blinking in ms.  For example if set to 500, the light would be on for 500 ms, then off for 500 ms, flashing at 1 hz.
+const unsigned long LED3_interval = 29;
+const unsigned long LED4_interval = 71; 
 
 unsigned long LED3_time;
 unsigned long LED4_time;
 unsigned char LED3_on;
 unsigned char LED4_on;
 
-unsigned char msg;  // 1 is to turn the lights on, 0 is to turn them off
-unsigned char light3_active;
+unsigned char msg;  // place holder for the byte we will take in in order to control the light
+unsigned char light3_active;  // Is the light active? This is our flag to tell.
 unsigned char light4_active;
 
 void setup () {
@@ -41,9 +47,9 @@ void setup () {
   pinMode (LED4, OUTPUT);
   LED3_time = millis ();
   LED4_time = millis ();
-  LED3_on = 0;  // This flag is to denote whether the light is *currently* on
+  LED3_on = 0;  // This flag is to denote whether the light is *currently on*
   LED4_on = 0;
-  light3_active = 0; // This flag is to denote whether the light is currently blinking
+  light3_active = 0; // This flag is to denote whether the light is currently blinking.
   light4_active = 0;
   msg = 2;  // Default to all off
 }

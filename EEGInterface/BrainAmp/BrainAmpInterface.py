@@ -119,7 +119,6 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         """
         # Extract numerical data
         (channelCount, samplingInterval) = struct.unpack('<Ld', rawdata[:12])
-        print channelCount
         # Extract resolutions
         resolutions = []
         for c in range(channelCount):
@@ -180,8 +179,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                 # Data message, extract data and markers
                 (block, points, marker_count, data, markers) = self.get_data(raw_data, channel_count)
 
-                if self.data_index == 1:
-                    print "Length of packet:", len(data)
+
                 # Get the time we collected the sample
                 data_recieve_time = time.time()
                 self.data_index += 1  # Increase our sample counter
@@ -205,15 +203,52 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                 ###################
                 # Save the Data - We put data on the queue to be saved - format for queue (index, time, data)
                 if self.data_save_queue is not None:
-                    self.data_save_queue.put((self.data_index, data_recieve_time, data))
+                    downsampled_matrix = self.downsample_all_channels(data=data, resolutions=resolutions)
+
+                    save_string = self.convert_downsample_matrix_to_save_string(data_index=self.data_index,
+                                                                                data_recieve_time=data_recieve_time, downsampled_matrix=downsampled_matrix)
+                    self.data_save_queue.put((None, None, save_string))
 
                 # if we are
-                if self.put_data_on_out_queue_flag is not None:
+                if self.put_data_on_out_queue_flag:
                     self.handle_out_buffer_queue(data, resolutions, channel_count, channel_dict)
 
             elif msgtype == 3:
                 self.con.close()  # Stop message, terminate program; Close tcpip connection
                 break
+
+    def convert_downsample_matrix_to_save_string(self, data_index, data_recieve_time, downsampled_matrix):
+        """
+        converts a downsample matrix of shape(samples, channels) to a string that can be used to save to a file
+        """
+        ret_str = ''
+        data_index_str = str(data_index)
+        data_recieve_time_str = str(data_recieve_time)
+        for ii in xrange(downsampled_matrix.shape[0]):
+            ret_str += ','.join([data_index_str, data_recieve_time_str] + map(str, list(downsampled_matrix[ii, :]))) + '\n'
+        return ret_str
+
+    def downsample_all_channels(self, data, resolutions):
+        """
+        Downsamples our data from 5000 Hz to 500 Hz for all channels
+        :param data: One data packet for 32 channels.
+        :param resolutions: Our resolutions
+        :return: A matrix of shape 10 by 32.  That is 10 samples for 32 channels.
+        """
+        # We sample at 5000 Hz.  We want to down sample to 500 hz.  We collect data in packets of 100 samples
+        # at 50 Hz. 100 * 50 = 5000
+        # If we took a single sample from each packet, we would be sampling at 50 Hz.
+        # Because we want to sample at 500 Hz, we need to take 10x as many samples, so for every packet,
+        # we need to collect 10 data points out of the 100 (aka, we need to collect every 10th data point)
+
+        indexes_needed = range(0, 100, 10)
+        # Shape is (Samples, Channels)
+        channels = np.zeros((len(indexes_needed), len(resolutions)))
+        for ii, resolution in enumerate(resolutions):
+            channel_data = [data[index + ii] * resolution for index in indexes_needed]
+            channels[:, ii] = np.asarray(channel_data)
+        return channels
+
 
     def handle_out_buffer_queue(self, data, resolutions, channel_count, channel_dict):
         """
@@ -273,7 +308,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         else:
             return data1s
 
-    def first_message_actions(self, raw_data, verbose=True):
+    def first_message_actions(self, raw_data, verbose=False):
         """
         Executes all actions associated with the first message (such as collecting meta information)
         :param raw_data:
@@ -286,14 +321,17 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         self.last_block = -1
 
         sampling_interval_seconds = sampling_interval * 10.0 ** -6
-        meta_info_str = "Subject Name:\t" + str(self.subject_name) + \
-                        "Subject Tracking Number:\t" + str(self.subject_number) + \
-                        "Experiment Number:\t" + str(self.experiment_number) + \
-                        "Number of channels:\t" + str(channel_count) + '\n' + \
-                        "Sampling interval:\t" + str(sampling_interval) + 'microseconds (' + str(sampling_interval_seconds) + ' seconds)\n' + \
-                        'Sampling Frequency:\t' + str(1.0 / sampling_interval_seconds) + ' Hz\n' + \
-                        "Resolutions:\t" + str(resolutions) + \
-                        "Channel Names:\t" + str(channel_names)
+        meta_info_str = "Subject Name,\t" + str(self.subject_name) + \
+                        "\nSubject Tracking Number,\t" + str(self.subject_number) + \
+                        "\nExperiment Number,\t" + str(self.experiment_number) + \
+                        "\nNumber of channels,\t" + str(channel_count) + \
+                        "\nSampling interval,\t" + str(sampling_interval) + ' microseconds (' + str(sampling_interval_seconds) + ' seconds)' + \
+                        '\nOriginal Sampling Frequency,\t' + str(1.0 / sampling_interval_seconds) + ' Hz' + \
+                        '\nDownsampled Sampling Frequency,\t' + str(500) + ' Hz' + \
+                        "\nResolutions,\t,\t" + str(resolutions) + \
+                        "\nChannel Names,\t,\t" + str(channel_names)
+        if self.data_save_queue is not None:
+            self.data_save_queue.put((None, None, meta_info_str))
         if verbose:
             print meta_info_str
 

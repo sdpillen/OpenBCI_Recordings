@@ -9,7 +9,7 @@ import time
 import bisect
 import ast
 
-def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops):
+def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops, trim=False):
     """
     Takes raw data of shape [sample, channel] and returns epoched data of shape [epoch, sample channel].
     The epoches are taken according to the indexing of the start and stop values in the eeg indexes
@@ -18,6 +18,7 @@ def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops):
     :param raw_data: data shape [sample, channel]
     :param trial_starts: lst of trial start values (eeg index or time)
     :param trial_stops: lst of trial start values (eeg index or time)
+    :param trim: if trim, we will cut the end of one axis to make the concat work.
     :return:
     """
     AV.assert_equal(len(eeg_indexes), raw_data.shape[0])
@@ -31,8 +32,13 @@ def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops):
         try:
             epoched_data = trial_epoched_data if epoched_data is None else np.concatenate((epoched_data, trial_epoched_data), axis=0)
         except ValueError:
-            print 'Epoched data shape', epoched_data.shape, 'Trial Epoched data shape', trial_epoched_data.shape
-            raise
+            if trim:
+                min_shape = min(epoched_data.shape[1], trial_epoched_data.shape[1])
+                epoched_data = epoched_data[:, :min_shape, :]
+                trial_epoched_data = trial_epoched_data[:, :min_shape, :]
+                epoched_data = np.concatenate((epoched_data, trial_epoched_data), axis=0)
+            else:
+                raise ValueError('Epoched data shape', epoched_data.shape, 'Trial Epoched data shape', trial_epoched_data.shape)
     AV.assert_equal(len(trial_stops), epoched_data.shape[0])
     return epoched_data
 

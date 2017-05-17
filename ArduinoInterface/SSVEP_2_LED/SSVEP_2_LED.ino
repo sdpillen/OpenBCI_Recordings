@@ -17,9 +17,9 @@ const unsigned char LIGHT_4_ACTIVATE_MSG = 4;
 const unsigned char LIGHT_3_DEACTIVATE_MSG = 5;
 const unsigned char LIGHT_4_DEACTIVATE_MSG = 6;
 
-// Values used in 20 Questions:
-// 38 = Yes = 13 Hz
-// 42 = No = 12 Hz
+// Values used in 20 Questions experiment:
+// 38 = Yes = 13 Hz = Left side of screen
+// 42 = No = 12 Hz = Right side of screen
 // 500 = 1 Hz for testing
 
 // Other values:
@@ -29,8 +29,8 @@ const unsigned char LIGHT_4_DEACTIVATE_MSG = 6;
 // 5 hz = 100
 
 // Interval that the light remains on (and off) when blinking in ms.  For example if set to 500, the light would be on for 500 ms, then off for 500 ms, flashing at 1 hz.
-const unsigned long LED3_interval = 29;
-const unsigned long LED4_interval = 71; 
+const unsigned long LED3_interval = 29;  // Left light
+const unsigned long LED4_interval = 71;     // Right light
 
 unsigned long LED3_time;
 unsigned long LED4_time;

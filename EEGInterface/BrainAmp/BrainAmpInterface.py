@@ -68,7 +68,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
         """
         # Call our EEGInterfaceParent init method.
-        super(BrainAmpStreamer, self).__init__(channels_for_live, out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
+        super(BrainAmpStreamer, self).__init__(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
                                                subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
         # Create a tcpip socket
         self.con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -268,6 +268,9 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
 
         indexes_needed = range(0, 100, 10)
         # Shape is (Samples, Channels)
+
+
+
         channels = np.zeros((len(indexes_needed), len(self.channels_for_live)))
         for ii, ch in enumerate(self.channels_for_live):
             # Get the channel index

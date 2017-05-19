@@ -16,7 +16,7 @@ unsigned long LED4_time;
 unsigned char LED3_on;
 unsigned char LED4_on;
 
-unsigned char LIGHTS_ON = 0;  // Set to zero and upload to turn both lights off.  Set to 1 and upload to have both lights flash.
+unsigned char LIGHTS_ON = 1;  // Set to zero and upload to turn both lights off.  Set to 1 and upload to have both lights flash.
 
 void setup () 
   {

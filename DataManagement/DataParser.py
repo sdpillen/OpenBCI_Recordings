@@ -43,6 +43,46 @@ def epoch_data(eeg_indexes, raw_data, trial_starts, trial_stops, trim=False):
     return epoched_data
 
 
+def cut_epoches_to_same_number_of_samples(epoched_data_list):
+    """
+    Takes a list of epoched data, (ie a list of data sets, each with the shape (epoch, num_samples, channel)) and trims each data set to have
+    the same number of samples.  This is done by finding the data_set with the fewest number of samples and slicing time off the end of all other
+    data sets to match.  This method is intended to be used with data sets that are simular in the number of samples, thus trimming the data sets
+    does not effect the data much, but allows them to be concatenated. 
+    :param epoched_data_list: list of data sets, each with the shape (epoch, num_samples, channel).
+    :return: list of data sets, each with the shape (epoch, min_num_samples, channel), where min_num_samples is the same value for all data_sets.
+    """
+    # Trim our data so it is the same number of samples
+    smallest_duration = min([xx.shape[1] for xx in epoched_data_list])
+
+    for index in range(len(epoched_data_list)):
+        epoched_data_list[index] = epoched_data_list[index][:, :smallest_duration, :]
+    return epoched_data_list
+
+
+def epoch_data_from_key(eeg_data_indexes, eeg_data, trial_list, start_key_list, end_key_list):
+    """
+    Takes the list of eeg_data_indexes 
+    :param eeg_data_indexes: A list of nondecreasing markers for each trial, this can be either time or eeg_indexes.
+    :param eeg_data: Unepoched EEG data
+    :param trial_list: List of trial dictionaries, as extracted from a log file.
+    :param start_key_list: List of start keys
+    :param end_key_list: List of corresponding end keys. Must be same length as start_key_list
+    :return: List of epoched eeg data, epoched according to the values provided in the trial_list and the start and end key_lists.
+    """
+
+    epoched_data_list = []
+    for start_key, end_key in zip(start_key_list, end_key_list):
+        start_indexes = extract_value_from_list_of_dicts(dictionary_list=trial_list, key=start_key)
+        end_indexes = extract_value_from_list_of_dicts(dictionary_list=trial_list, key=end_key)
+        end_indexes = convert_start_end_index_lists_to_single_duration_trials(start_trial_index=start_indexes, end_trial_index=end_indexes)
+
+        epoched_data_list.append(epoch_data(eeg_indexes=eeg_data_indexes, trial_starts=start_indexes, trial_stops=end_indexes, raw_data=eeg_data, trim=True))
+
+    return epoched_data_list
+
+
+
 def extract_value_from_list_of_dicts(dictionary_list, key):
     """
     Iterates through a given dictionary for key in key order and returns a list of values for that key order

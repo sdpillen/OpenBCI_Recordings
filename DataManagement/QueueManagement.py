@@ -13,6 +13,11 @@ def clear_queue(q):
     with q.mutex:
         q.queue.clear()
 
+def clear_mutiprocess_queue(q):
+    """ clears a mutliprocess queue"""
+    while not q.empty():
+        q.get()
+
 def get_queue_dict(all_queues, thread=True):
     """
     Gets a queue dictionary with keys equal to all queues names in ALL_QUEUES

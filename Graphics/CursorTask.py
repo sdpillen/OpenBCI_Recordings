@@ -96,14 +96,19 @@ class CursorTask(object):
 
     # Main Commands:
     ONLY_CROSSHAIR_WITH_BACKGROUND = 'show_only_crosshair_with_background'  # No Args.
+    RESET = 'reset_r'
+
+    # Text Commands
+    SET_TEXT_DICTIONARY_LIST = 'text_dictionary_list'
 
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
                  crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0,
-                 target_thickness=100, cursor_radius=60, font_size=40, font_type="Calibri (Body)",
+                 target_thickness=200, cursor_radius=60, font_size=60, font_type="Verdana",
                  crosshair_cross_color=(255, 255, 255),
+                 show_cursor=False,
                  show_mouse=False, tick_time=10, crosshair_height=30, crosshair_width=30, crosshair_thickness=8,
-                 target_size_left=(100, None), target_size_right=(100, None), target_size_top=(None, 100), target_size_bottom=(None, 100)):
+                 target_size_left=(200, None), target_size_right=(200, None), target_size_top=(None, 100), target_size_bottom=(None, 100), text_dictionary_list=None):
         """
         Defaults to drawing the crosshair first.
 
@@ -134,6 +139,8 @@ class CursorTask(object):
                                     Defaults to (None, 100)
         """
         self.screen_width, self.screen_height = screen_size_width, screen_size_height
+
+        self.text_dictionary_list = [] if text_dictionary_list is None else text_dictionary_list
 
         # Fix our targets (removing all None attributes and replacing with screen height/width.
         self.target_size_left, self.target_size_right, self.target_size_top, self.target_size_bottom = \
@@ -178,7 +185,7 @@ class CursorTask(object):
 
         # draw flags
         self.draw_left_flag = True
-        self.draw_right_flag = False
+        self.draw_right_flag = True
         self.draw_top_flag = False
         self.draw_bottom_flag = False
 
@@ -200,12 +207,12 @@ class CursorTask(object):
         self.q_action_dictionary = self.gen_action_dictionary()
 
         # Default of object is to draw the crosshair first.
-        self.draw_crosshair_flag = True
-        self.draw_cursor_flag = True
+        self.draw_crosshair_flag = False
+        self.draw_cursor_flag = show_cursor
 
         # Init Pygame
         pygame.init()
-        pygame.mouse.set_visible(not show_mouse)
+        pygame.mouse.set_visible(show_mouse)
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.NOFRAME)
 
         self.font = pygame.font.SysFont(font_type, font_size)
@@ -233,6 +240,7 @@ class CursorTask(object):
 
                              self.MOVE_CURSOR: lambda move_cursor_val: self.set_cursor_x_coord(move_cursor_val),
                              self.SHOW_CURSOR: lambda: self.show_cursor(True),
+                             self.HIDE_CURSOR: lambda: self.show_cursor(False),
                              self.SHOW_LEFT_FLAG: lambda booll: self.show_left_flag(booll),
                              self.SHOW_RIGHT_FLAG: lambda boolr: self.show_right_flag(boolr),
                              self.SHOW_BLANK: lambda: self.hide_all(),
@@ -240,8 +248,15 @@ class CursorTask(object):
                              self.SET_CROSSHAIR_CROSS_COLOR: lambda color: self.set_crosshairs_color_for_flash(color=color),
                              self.CROSSHAIR_CROSS_COLOR_RED: lambda chred=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chred),
                              self.CROSSHAIR_CROSS_COLOR_WHITE: lambda chwhite=(255, 0, 0): self.set_crosshairs_color_for_flash(color=chwhite),
-                             self.ONLY_CROSSHAIR_WITH_BACKGROUND: lambda: self.show_only_crosshairs_with_ch_background()}
+                             self.ONLY_CROSSHAIR_WITH_BACKGROUND: lambda: self.show_only_crosshairs_with_ch_background(),
+                             self.RESET: lambda: self.reset(),
+                             self.SET_TEXT_DICTIONARY_LIST: lambda new_text_dictionary_list_l: self.set_text_dictionary_list(new_text_dictionary_list=new_text_dictionary_list_l)}
         return action_dictionary
+
+    def set_text_dictionary_list(self, new_text_dictionary_list):
+        if type(new_text_dictionary_list) is dict():
+            new_text_dictionary_list = [new_text_dictionary_list]
+        self.text_dictionary_list = new_text_dictionary_list
 
     def fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top, target_size_bottom):
         """
@@ -281,6 +296,7 @@ class CursorTask(object):
         if color is None:
             color = self.neutral_color
         self.cursor_y = self.screen_height // 2
+        self.cursor_x = self.screen_width // 2
         self.left_color = color
         self.right_color = color
         self.top_color = color
@@ -466,10 +482,15 @@ class CursorTask(object):
         """
         timer = pygame.time.Clock()
         while True:
+            self.clear_events()
             try:
-                key, args = q.get()
+                key, args = q.get(False)
                 if args is None:
                     self.q_action_dictionary[key]()
+                elif key == self.SET_TEXT_DICTIONARY_LIST:
+                    self.q_action_dictionary[key](args)
+                elif type(args) is not tuple:
+                    self.q_action_dictionary[key](args)
                 else:
                     self.q_action_dictionary[key](*args)
             except Queue.Empty:
@@ -592,13 +613,9 @@ class CursorTask(object):
             pygame.draw.rect(self.screen, self.crosshair_cross_color,
                              pygame.Rect((screenwidth_half, screenheight_half - height_half),
                                          (self.crosshair_thickness, self.crosshair_height)))
-        if self.draw_cursor_flag:
-            # Are we showing the cursor?
-            self.screen.fill((0, 0, 0))
-            pygame.draw.circle(self.screen,
-                               (255, 255, 255),
-                               [self.cursor_x, self.cursor_y],
-                               self.cursor_radius)
+
+        self.clear_events()
+
         if self.draw_left_flag:
             # Are we drawing the left flag?
             pygame.draw.rect(self.screen, self.left_color,
@@ -606,7 +623,7 @@ class CursorTask(object):
         if self.draw_right_flag:
             # Are we drawing the right flag?
             pygame.draw.rect(self.screen, self.right_color,
-                             pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_right))
+                             pygame.Rect((self.right_bar_x, self.top_y), self.target_size_right))
 
         if self.draw_top_flag:
             # Are we drawing the left flag?
@@ -616,6 +633,16 @@ class CursorTask(object):
             # Are we drawing the bottom flag?
             pygame.draw.rect(self.screen, self.bottom_color,
                              pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_bottom))
+
+        if self.draw_cursor_flag:
+            # Are we showing the cursor?
+            pygame.draw.circle(self.screen,
+                               (255, 255, 255),
+                               [self.cursor_x, self.cursor_y],
+                               self.cursor_radius)
+
+        self.draw_text()
+        self.clear_events()
 
     def show_only_crosshairs_with_ch_background(self):
         """
@@ -654,6 +681,27 @@ class CursorTask(object):
         """
         self.crosshair_cross_color = color
 
+
+    def draw_text(self):
+        if type(self.text_dictionary_list) is list:
+            for text_dict in self.text_dictionary_list:
+                color = text_dict['color']
+                x, y= text_dict['pos']
+                text = text_dict['text']
+                answer_txt = self.font.render(text, False, color)
+                self.screen.blit(answer_txt, (x, y))
+        else:
+            text_dict = self.text_dictionary_list
+            color = text_dict['color']
+            x, y = text_dict['pos']
+            text = text_dict['text']
+            answer_txt = self.font.render(text, False, color)
+            self.screen.blit(answer_txt, (x, y))
+
+        answer_txt = self.font.render('YES', False, (0, 0, 0))
+        self.screen.blit(answer_txt, (25, 540))
+        answer_txt = self.font.render('NO', False, (0, 0, 0))
+        self.screen.blit(answer_txt, (1775, 540))
 
 if __name__ == '__main__':
     CursorTask().run_with_keys()

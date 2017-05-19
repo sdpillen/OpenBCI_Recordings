@@ -42,6 +42,7 @@ unsigned char light3_active;  // Is the light active? This is our flag to tell.
 unsigned char light4_active;
 
 void setup () {
+  msg = 2;  // 2 --Default to all off (1 is both on)
   Serial.begin(9600);
   pinMode (LED3, OUTPUT);
   pinMode (LED4, OUTPUT);
@@ -51,7 +52,7 @@ void setup () {
   LED4_on = 0;
   light3_active = 0; // This flag is to denote whether the light is currently blinking.
   light4_active = 0;
-  msg = 2;  // Default to all off
+  
 }
 
 void turn_off_LED3 (){

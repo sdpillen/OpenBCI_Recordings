@@ -54,7 +54,6 @@ def cut_epoches_to_same_number_of_samples(epoched_data_list):
     """
     # Trim our data so it is the same number of samples
     smallest_duration = min([xx.shape[1] for xx in epoched_data_list])
-
     for index in range(len(epoched_data_list)):
         epoched_data_list[index] = epoched_data_list[index][:, :smallest_duration, :]
     return epoched_data_list
@@ -62,7 +61,12 @@ def cut_epoches_to_same_number_of_samples(epoched_data_list):
 
 def epoch_data_from_key(eeg_data_indexes, eeg_data, trial_list, start_key_list, end_key_list):
     """
-    Takes the list of eeg_data_indexes 
+    Takes the list of eeg_data_indexes, eeg_data, trial_list, start_key_list, end_key_list and returns a list
+    of epoched data, epoched according to those parameters.  Note that each element of the returned epoched data has the shape
+    (epoch, sample, channel), however each element may or may not have the same shape as all other elements.
+    
+    If you desire all elements to have the same shape, consider calling cut_epoches_to_same_number_of_samples(epoch_data_from_key(args)).
+    
     :param eeg_data_indexes: A list of nondecreasing markers for each trial, this can be either time or eeg_indexes.
     :param eeg_data: Unepoched EEG data
     :param trial_list: List of trial dictionaries, as extracted from a log file.
@@ -76,9 +80,7 @@ def epoch_data_from_key(eeg_data_indexes, eeg_data, trial_list, start_key_list, 
         start_indexes = extract_value_from_list_of_dicts(dictionary_list=trial_list, key=start_key)
         end_indexes = extract_value_from_list_of_dicts(dictionary_list=trial_list, key=end_key)
         end_indexes = convert_start_end_index_lists_to_single_duration_trials(start_trial_index=start_indexes, end_trial_index=end_indexes)
-
         epoched_data_list.append(epoch_data(eeg_indexes=eeg_data_indexes, trial_starts=start_indexes, trial_stops=end_indexes, raw_data=eeg_data, trim=True))
-
     return epoched_data_list
 
 

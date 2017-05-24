@@ -125,13 +125,21 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
     def start_open_bci_streamer(self):
         """
         Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
+
+        To keep naming consistant across EEG systems, calling .start_recording provides the same utility.
         """
         board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
         board.start_streaming(self.write_file_callback)
 
+    def start_recording(self):
+        """
+        Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
+        Data is put onto the out_buffer_queue and data_save_queue as according to the initialization of this object.
+        """
+        self.start_open_bci_streamer()
 
 if __name__ == '__main__':
     data_save_queue = Queue.Queue()
     obs = OpenBCIStreamer(out_buffer_queue=None, data_save_queue=data_save_queue, port="COM5")
-    threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='./sample.csv', queue=data_save_queue, header="Sample Header")).start()
+    threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='sample.csv', queue=data_save_queue, header="Sample Header")).start()
     obs.start_open_bci_streamer()

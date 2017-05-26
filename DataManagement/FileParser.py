@@ -7,6 +7,7 @@ import CCDLUtil.Utility.AssertVal as AV
 import time
 import bisect
 import ast
+import scipy.io
 
 
 def load_yaml_file(config_file_path):
@@ -43,33 +44,23 @@ def load_pickle_file(pickle_file_path, binary=True):
         return pickle.load(fp)
 
 
-def remove_data_file_training_comma(file_path, save_path, header_size=6):
+def save_matlab_file(mat_file_path, data, appendmat=True):
     """
-    Some brain amp data sets are saved with a trailing comma, making it so they cannot be opened via some numpy methods.
-    This reads in a line and writes it to the save path without the trailing comma.
-    :param file_path: Path to file with saved comma
-    :param save_path: Where to save resulting file
-    :param header_size: size of header - header will be removed in new file
-    :return: None (saves to file)
+    Saves a python dictionary (data) as a .mat file.
+        :param mat_file_path : str or file-like object
+            Name of the .mat file (.mat extension not needed if appendmat is True). Can also pass open file_like object.
+        :param data : dict - Dictionary from which to save matfile variables.
     """
-    with open(file_path, 'r') as r:
-        with open(save_path, 'w') as w:
-            # read the header
-            for xx in xrange(header_size):
-                r.readline()
-            for line in r:
-                # take off new line and comma
-                line, end_char = line[:-1], line[-1]
-                # remove comma
-                line, comma1 = line[:-1], line[-1]
-                line, comma = line[:-1], line[-1]
-                # add newline back
-                assert comma == ',', comma
-                line += end_char
-                assert not line.endswith(',')
-                assert line[-1] != ','
-                if line != '':
-                    w.write(line)
+    scipy.io.savemat(file_name=mat_file_path, mdict=data, appendmat=appendmat)
+
+
+def load_matlab_file(mat_file_path):
+    """
+    Loads a .mat file to a python dictionary
+    :param mat_file_path: The path to the matlab file.
+    """
+    return scipy.io.savemat(file_name=mat_file_path)
+
 
 def iter_loadtxt(filename, delimiter=',', skiprows=0, dtype=float):
     """
@@ -158,18 +149,16 @@ def load_ast_dictionary_by_trial(file_path, header_size=0, record_header=True):
 
 def gen_readme_file(readme_file_path, experiment_name, simple_subject_number, condition, tms_experiment_tracker_number, tms_subject_tracker_number):
     """
-    Gens a readme file for readme_file_path that includes the passed information
-    :return: None
+    Generates a readme file (located at readme_file_path) that includes the passed information
     """
     with open(readme_file_path, 'r') as f:
-        # a bit redundant but whatever....
         readme_dict = {'Experiment Name' : experiment_name,
                        'Subject Number' : str(simple_subject_number),
                        'Experimental Condition' : str(condition),
                        'Experiment Tracking Number' : str(tms_experiment_tracker_number),
                        'Subject Tracking Number' : str(tms_subject_tracker_number)}
 
-        f.write('\n'.join([str(readme_dict),  # Use ast literal eval to extract below info.
+        f.write('\n'.join([str(readme_dict),
                            'Experiment Name' + str(experiment_name),
                            'Subject Number' + str(simple_subject_number),
                            'Experimental Condition' + str(condition),

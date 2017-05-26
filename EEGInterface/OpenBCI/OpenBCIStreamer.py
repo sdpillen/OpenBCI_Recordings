@@ -141,5 +141,5 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
 if __name__ == '__main__':
     data_save_queue = Queue.Queue()
     obs = OpenBCIStreamer(out_buffer_queue=None, data_save_queue=data_save_queue, port="COM5")
-    threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='sample.csv', queue=data_save_queue, header="Sample Header")).start()
+    threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='RestingStateMay24.csv', queue=data_save_queue, header="Sample Header")).start()
     obs.start_open_bci_streamer()

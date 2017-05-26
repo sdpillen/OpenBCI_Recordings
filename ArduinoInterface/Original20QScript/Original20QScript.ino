@@ -3,7 +3,7 @@ int LED4 = 3;
 // 38 = Yes = 13 Hz
 // 42 = No = 12 Hz
 // 500 = 1 Hz for testing
-const unsigned long LED3_interval = 29; // Interval between on and off in ms
+const unsigned long LED3_interval = 500; // Interval between on and off in ms
 
 // 17 Hz = 29
 // 13 Hz = 38

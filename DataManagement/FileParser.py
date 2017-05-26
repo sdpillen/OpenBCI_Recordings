@@ -71,34 +71,6 @@ def remove_data_file_training_comma(file_path, save_path, header_size=6):
                 if line != '':
                     w.write(line)
 
-
-def downsample_by_factor_of_2(file_path, save_path, header_size=0):
-    """
-    Down samples brain amp samples at (5000; downsampled to 500) 500 Hz to 250 hz
-    :param file_path: Path to file to be downsampled
-    :param save_path: Where to save resulting file
-    :param header_size: size of header - header will be removed in new file (default 0)
-    :return: None (saves to file)
-    """
-    with open(file_path, 'r') as r:
-        with open(save_path, 'w') as w:
-            # read the header
-            for xx in xrange(header_size):
-                r.readline()
-
-            for ii, line in enumerate(r):
-                if ii % 2 == 0:
-                    if line != '':
-                        w.write(line)
-
-
-def strip_comma_and_downsample_from_500_to_250_hz(file_path, save_path, header_size=6):
-    temp_file_name = '/tmp/temp_file_downsample_comma.txt'
-    remove_data_file_training_comma(file_path, temp_file_name, header_size)
-    downsample_by_factor_of_2(temp_file_name, save_path, header_size=0)
-    os.remove('/tmp/temp_file_downsample_comma.txt')
-
-
 def iter_loadtxt(filename, delimiter=',', skiprows=0, dtype=float):
     """
     Loads a txt file to a 2D numpy array. This is effectively equivalent to np.loadtxt() - but more efficient.
@@ -203,19 +175,3 @@ def gen_readme_file(readme_file_path, experiment_name, simple_subject_number, co
                            'Experimental Condition' + str(condition),
                            'Experiment Tracking Number' + str(tms_experiment_tracker_number),
                            'Subject Tracking Number' + str(tms_subject_tracker_number)]))
-
-
-if __name__ == '__main__':
-    FILE_PATH = '/media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/SentComp/Subject6/Subject6_BrainAmpData.csv'
-    SAVE_PATH = '/media/darby/ExtraDrive1/PycharmProjects/DataInterface/data/SentComp/Subject6/Subject6_BrainAmpData_stripped_250hz.csv'
-    parser = argparse.ArgumentParser(description='Brain Amp fix.')
-    parser.add_argument('--data_file_path', dest='data_file_path', nargs='?', type=str, help='(Optional) Path to data file',
-                        default=FILE_PATH)
-
-    parser.add_argument('--data_save_path', dest='data_save_path', nargs='?', type=str, help='(Optional) Path to save resulting file',
-                        default=SAVE_PATH)
-    parser.add_argument('--header_size', dest='header_size', nargs='?', type=int, help='(Optional) header size',
-                        default=6)
-    args = parser.parse_args()
-
-    strip_comma_and_downsample_from_500_to_250_hz(file_path=args.data_file_path, save_path=args.data_save_path, header_size=args.header_size)

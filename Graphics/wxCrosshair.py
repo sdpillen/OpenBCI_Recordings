@@ -1,4 +1,9 @@
+"""
+A crosshair, using wxPython
+"""
+
 import wx
+import time
 
 class Crosshair(wx.Frame):
     def __init__(self, x_pos=-1920, y_pos=0, screen_width=1920, screen_height=1080, title="Crosshair", background_color="#686868",

@@ -2,7 +2,7 @@
 
 """
 
-Displays crosshair using pygame.
+Displays a crosshair using pygame.
 
 #############################
 Running with queue          #
@@ -44,6 +44,7 @@ class PyCrosshair(object):
 
     # Text Commands
     SET_TEXT_DICTIONARY_LIST = 'text_dictionary_list'
+
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080,
                  background_color=(128, 128, 128), window_x_pos=-1920, window_y_pos=0, cursor_radius=60, font_size=60, font_type="Verdana",
@@ -97,6 +98,10 @@ class PyCrosshair(object):
 
         self.font = pygame.font.SysFont(font_type, font_size)
         pygame.event.set_blocked(pygame.MOUSEMOTION)
+
+        self.message_text_dictionary = {
+
+        }
 
     def gen_action_dictionary(self):
         """

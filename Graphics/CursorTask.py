@@ -101,12 +101,10 @@ class CursorTask(object):
     # Text Commands
     SET_TEXT_DICTIONARY_LIST = 'text_dictionary_list'
 
-
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
                  crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0,
                  target_thickness=200, cursor_radius=60, font_size=60, font_type="Verdana",
-                 crosshair_cross_color=(255, 255, 255),
-                 show_cursor=False,
+                 crosshair_cross_color=(255, 255, 255), show_cursor=False,
                  show_mouse=False, tick_time=10, crosshair_height=30, crosshair_width=30, crosshair_thickness=8,
                  target_size_left=(200, None), target_size_right=(200, None), target_size_top=(None, 100), target_size_bottom=(None, 100), text_dictionary_list=None):
         """
@@ -197,7 +195,6 @@ class CursorTask(object):
                             'DOWN': lambda: self.move_cursor_delta_y(10),
                             'LEFT': lambda: self.move_cursor_delta_x(-10),
                             'RIGHT': lambda: self.move_cursor_delta_x(10),
-
                             'a': lambda: self.collide_left(),
                             'd': lambda: self.collide_right(),
                             's': lambda: self.collide_bottom(),

@@ -99,7 +99,7 @@ class CursorTask(object):
     RESET = 'reset_r'
 
     # Text Commands
-    SET_TEXT_DICTIONARY_LIST = 'text_dictionary_list'
+    SET_TEXT_DICTIONARY_LIST = 'dictionary_text_list'
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80), hit_color=(255, 204, 0),
                  crosshair_background_color=(128, 128, 128), cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0,

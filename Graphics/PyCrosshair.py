@@ -37,13 +37,16 @@ class PyCrosshair(object):
     # Global settings
     SHOW_BLANK = 'show_blank'  # Shows only the blank screen (with no crosshair)
     SHOW_CROSSHAIR = 'show_crosshair'  # Shows the crosshair
+    HIDE_CROSSHAIR = 'hide_crosshair'
     RESET_CROSSHAIR = 'reset_crosshair' # Shows the crosshair and hides all onscreen text
+
+
 
     CROSSHAIR_CROSS_COLOR_FLASH = 'crosshair_cross_color_flash'  # Sets the crosshair to the flash color
     CROSSHAIR_CROSS_COLOR_DEFAULT = 'crosshair_cross_color_reset'  # Sets the crosshair to the default color
 
     # Text Commands
-    SET_TEXT_DICTIONARY_LIST = 'text_dictionary_list'
+    SET_TEXT_DICTIONARY_LIST = 'dictionary_text_list'
 
 
     def __init__(self, screen_size_width=1920, screen_size_height=1080,
@@ -69,7 +72,10 @@ class PyCrosshair(object):
         """
         self.screen_width, self.screen_height = screen_size_width, screen_size_height
 
-        self.text_dictionary_list = [] if text_dictionary_list is None else text_dictionary_list
+
+        # We'll keep track of our text locally.  If using a manager, send set the desired text in the manager and update.
+        # This variable will update to display the text.
+        self.dictionary_text_list = [] if text_dictionary_list is None else text_dictionary_list
 
         # Set our window position  (not sure if this commands works on non-windows computers...)
         os.environ['SDL_VIDEO_WINDOW_POS'] = str(window_x_pos) + "," + str(window_y_pos)
@@ -99,9 +105,6 @@ class PyCrosshair(object):
         self.font = pygame.font.SysFont(font_type, font_size)
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
-        self.message_text_dictionary = {
-
-        }
 
     def gen_action_dictionary(self):
         """
@@ -113,7 +116,8 @@ class PyCrosshair(object):
         action_dictionary = {
                              self.RESET_CROSSHAIR: lambda: self.reset_crosshair(),
                              self.SHOW_BLANK: lambda: self.show_crosshair(False),
-                             self.SHOW_CROSSHAIR: lambda scb: self.show_crosshair(scb),
+                             self.SHOW_CROSSHAIR: lambda: self.show_crosshair(True),
+                             self.HIDE_CROSSHAIR: lambda: self.show_crosshair(False),
                              self.CROSSHAIR_CROSS_COLOR_FLASH: lambda ch_red=self.crosshair_cross_color_flash: self.set_crosshairs_color(color=ch_red),
                              self.CROSSHAIR_CROSS_COLOR_DEFAULT: lambda ch_white=self.crosshair_cross_color_default: self.set_crosshairs_color(color=ch_white),
                              self.SET_TEXT_DICTIONARY_LIST: lambda new_text_dictionary_list_l: self.set_text_dictionary_list(new_text_dictionary_list=new_text_dictionary_list_l)}
@@ -122,13 +126,13 @@ class PyCrosshair(object):
     def set_text_dictionary_list(self, new_text_dictionary_list):
         if type(new_text_dictionary_list) is dict():
             new_text_dictionary_list = [new_text_dictionary_list]
-        self.text_dictionary_list = new_text_dictionary_list
+        self.dictionary_text_list = new_text_dictionary_list
 
     def reset_crosshair(self):
         """
         Resets our crosshair -- shows crosshair, changes crosshair to default color and hides all texts,
         """
-        self.text_dictionary_list = []
+        self.dictionary_text_list = []
         self.current_crosshair_cross_color = self.crosshair_cross_color_default
         self.show_crosshair(True)
 
@@ -218,22 +222,60 @@ class PyCrosshair(object):
         self.current_crosshair_cross_color = color
 
     def draw_text(self):
-        if type(self.text_dictionary_list) is list:
-            for text_dict in self.text_dictionary_list:
-                assert type(text_dict) is dict
-                color = text_dict['color']
-                x, y = text_dict['pos']
-                text = text_dict['text']
-                answer_txt = self.font.render(text, False, color)
-                self.screen.blit(answer_txt, (x, y))
-        else:
-            text_dict = self.text_dictionary_list
+        """
+        Draws our text contained in dictionary_text_list onscreen.
+        :return:
+        """
+        if type(self.dictionary_text_list) is not list:
+            self.dictionary_text_list = [self.dictionary_text_list]
+        for text_dict in self.dictionary_text_list:
+            assert type(text_dict) is dict
             color = text_dict['color']
             x, y = text_dict['pos']
             text = text_dict['text']
+            if x is None or y is None:
+                center_x, center_y = self.get_coords_for_message_center(text)
+                x = center_x if x is None else x
+                y = center_y if y is None else y
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
 
+    def get_coords_for_message_center(self, msg):
+        """
+        Gets the coordinates for centering the message on screen.
+        :param msg: The message to center onscreen
+        :return: The x y coords to blit the message to have it be at the center of the screen.
+        """
+        size_x, size_y = self.get_message_size(msg)
+        center_x = (self.screen_width // 2) - (size_x // 2)
+        center_y = (self.screen_height // 2) - (size_y // 2)
+        return center_x, center_y
+
+    def get_message_size(self, msg):
+        """
+        Gets the width and height of our message.
+        """
+        msg_image = self.font.render(msg, False, (255, 255, 255), (0, 0, 0))
+        size_x, size_y = msg_image.get_size()
+        return size_x, size_y
+
+    def center_multiline_msg(self, msg):
+        """
+        Displays a multiline message (msg) to screen at the very center of the screen.
+        :param msg: The string message
+        :return: None - displays to screen
+        """
+        for i, line in enumerate(msg.splitlines()):
+            msg_image = self.font.render(line, False,
+                                         (255, 255, 255), (0, 0, 0))
+
+            msgim_center_x, msgim_center_y = msg_image.get_size()
+            msgim_center_x //= 2
+            msgim_center_y //= 2
+
+            self.screen.blit(msg_image, (
+                self.background_width // 2 - msgim_center_x,
+                self.background_height // 2 - msgim_center_y + i * 22))
 
 if __name__ == '__main__':
     PyCrosshair().run_with_queue(Queue.Queue())

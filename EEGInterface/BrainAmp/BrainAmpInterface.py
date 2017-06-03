@@ -81,6 +81,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         except:
             print "--Ensure that the BrainVision software is on and the dongle is plugged in and functioning."
             print "See CCDLUtil Documentation for instructions on how to run the BrainVision EEG system --"
+            time.sleep(1)
             raise
 
     @staticmethod

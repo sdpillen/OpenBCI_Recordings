@@ -1,3 +1,7 @@
+"""
+Example for out to use OpenBCI interface.
+"""
+
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLStreamer
 import CCDLUtil.EEGInterface.EEG_INDEX as CCDLEEGIndex
 import Queue

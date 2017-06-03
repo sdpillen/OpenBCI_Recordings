@@ -230,6 +230,21 @@ This provides a very long, complicated error message.  The portion shown below i
 
         No connection could be made because the target machine actively refused it
 
+* Multiprocessing Error
+
+    The picking error means you are attempting to access an object from a different process.  Don't do that.
+
+    This also means you can't use lambda functions when creating a new process.  Use the below format instead.  Note the additional comma, else you'll get an error stating that it is not a tuple (and thus not iterable).
+
+
+        crosshair_mp_queue = multiprocessing.Queue()
+        multiprocessing.Process(target=run_pygame, args=(crosshair_mp_queue,)).start()
+
+    The error message:
+
+        pickle.PicklingError: Can't pickle <function <lambda> at
+                0x0DA209B0>: it's not found as __main__.<lambda>
+
 # Running 20 Questions
 
 Please see Documentation/gUSBAmp for how to set up the hardware.

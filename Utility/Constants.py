@@ -18,4 +18,7 @@ class EEGSystemNames(object):
     GUSB_AMP = 'g_usb_amp'
     OpenBCI = 'open_bci'
     EMOTIV = 'emotiv'
-    ALL_NAMES = {BRAIN_AMP, GUSB_AMP, OpenBCI, EMOTIV}
+
+    NO_BCI = None  # For testing
+
+    ALL_VALID_NAMES = {BRAIN_AMP, GUSB_AMP, OpenBCI, EMOTIV}

@@ -69,7 +69,7 @@ def get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, chann
 
     time_stamps or packet_indexes can be None.  If it is None, it will not be included in our returned dictionary.  This method raises a Value error if both are None.
 
-    :param eeg_system: string - The EEG System must be a valid system as shown in CCDLUtil.Utility.Constants.EEGSystemNames.ALL_NAMES
+    :param eeg_system: string - The EEG System must be a valid system as shown in CCDLUtil.Utility.Constants.EEGSystemNames.ALL_VALID_NAMES
     :param unepoched_eeg_data: Our unepoched EEG with shape (sample, channel)
     :param event_markers: Our event markers that could be used for epoching our eeg
     :param channel_names: list or numpy array - The names of our channels. The length of this list should be equal to unepoched_eeg_data.shape[1].
@@ -83,8 +83,8 @@ def get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, chann
     :param save_location_path: String or None (defaults to None) - The location in which to save the mat formatted dictionary.  If None, it will not be saved.
     :return: A dictionary that fits our standard .mat formatting.
     """
-    if eeg_system not in CCDLConstants.EEGSystemNames.ALL_NAMES:
-        raise ValueError('The EEG System must be a valid system as shown in CCDLUtil.Utility.Constants.EEGSystemNames.ALL_NAMES')
+    if eeg_system not in CCDLConstants.EEGSystemNames.ALL_VALID_NAMES:
+        raise ValueError('The EEG System must be a valid system as shown in CCDLUtil.Utility.Constants.EEGSystemNames.ALL_VALID_NAMES')
     if unepoched_eeg_data.shape[1] != len(list(channel_names)):
         raise ValueError('There are not the same number of channel names as channels given: %d Channels, %d Channel Names' % (unepoched_eeg_data.shape[1], len(channel_names)))
     if time_stamps is None and packet_indexes is None:
@@ -202,3 +202,31 @@ def gen_readme_file(readme_file_path, experiment_name, simple_subject_number, co
                            'Experimental Condition' + str(condition),
                            'Experiment Tracking Number' + str(tms_experiment_tracker_number),
                            'Subject Tracking Number' + str(tms_subject_tracker_number)]))
+
+
+def idempotent_dir_creation(new_dir_path):
+    """
+    Checks if new_path exists. If it doesn't exist, it will make a new folder at that location.
+    :param new_dir_path: Desired location of new directory.
+    :return new_dir_path.  Returns new path (unmodified)
+    """
+    if not os.path.exists(new_dir_path):
+        os.mkdir(new_dir_path)
+    return new_dir_path
+
+
+def convert_to_windows_path(path_str):
+    """
+    Converts a path, such as 'C:/Users/eeglab/PycharmProjects' to 'C:\Users\eeglab\PycharmProjects'
+    :param path_str:
+    :return:
+    """
+    return path_str.replace('/', '\\')
+
+
+# if __name__ == '__main__':
+#     linx_path = 'C:/Users/Experimenter/PycharmProjects'
+#     xxx = convert_to_windows_path(linx_path)
+#     print xxx
+#     print os.path.exists(convert_to_windows_path(linx_path))
+#     print os.path.join(xxx, 'cat')

@@ -39,10 +39,10 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
 
         super(OpenBCIStreamer, self).__init__(channels_for_live, out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
                                               subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
+        # in super, self.data_index is set to 0
         self.channel_names = str(channel_names)
         self.channels_for_save = channels_for_save
         self.include_aux_in_save_file = include_aux_in_save_file
-        self.overall_data_index = 0
         self.channels_for_live = channels_for_live
 
         # Set our port to default if a port isn't passed
@@ -72,7 +72,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
 
         try:
             data = data_packet.channel_data  #  List of data points
-            self.overall_data_index += 1     # overall_data_index starts at -1, thus our data is always indexed >= 0 by incrementing here instead of at the end of the method.
+            self.data_index += 1     # data_index starts at -1, thus our data is always indexed >= 0 by incrementing here instead of at the end of the method.
             aux_data = data_packet.aux_data  # List of AUX data (note that this is sampled at a fraction of the rate of the data.  Each packet will have this field
                                              # but packets that don't have aux data will have a list of zeros.
             id_val = data_packet.id
@@ -118,8 +118,8 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
                 self.data_save_queue.put((None, None, data_str + '\n'))
 
         # Set our two EEG INDEX parameters.
-        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.overall_data_index
-        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.overall_data_index
+        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.data_index
+        CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.EEG_ID_VAL = id_val
 
     def start_open_bci_streamer(self):

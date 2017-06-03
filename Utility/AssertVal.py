@@ -52,3 +52,6 @@ def assert_is_none(val1, message=''):
     Runs assertion and displays value if assertion fails.
     """
     assert val1 is None , '%s -- %s' % (str(message), str(val1))
+
+def assert_type(val1, type, message='Invalid types:'):
+    assert type(val1) is type, message + '%s -- %s is type %s, not type %s' % (str(message), str(val1), type(val1), str(type))

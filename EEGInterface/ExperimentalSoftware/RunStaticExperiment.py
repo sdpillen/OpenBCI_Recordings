@@ -5,7 +5,6 @@ This contains methods for collecting data in order to train a classifier for the
 import threading
 import multiprocessing
 import CCDLUtil.DataManagement.FileParser as CCDLFP
-# from ParentInterface import QueueDict, Runner
 import time
 import CCDLUtil.EEGInterface.EEG_INDEX as CCDLEEGIndex
 import winsound
@@ -40,13 +39,13 @@ def print_info(message, trial_index, start_time):
     print message, trial_index, '\t', "%d:%02d" % (m, s)
 
 
-def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None):
+def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, vebose=True):
     """
     Starts streaming our EEG in a new thread
-    :param eeg_system:
-    :param subject_data_folder_path:
-    :param subject_num:
-    :param comport:
+    :param eeg_system: str - eeg system type
+    :param subject_data_folder_path: path to subject folder
+    :param subject_num: any_type - subject identifier
+    :param comport: Port of the EEG system.  This is only needed for using an eeg system that requires it (specifically OpenBCI)
     :return: eeg, data_save_queue
             eeg - a reference to our eeg object
             data_save_queue - q that eeg data is put in order to be saved.
@@ -62,21 +61,24 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None):
     elif eeg_system == CCDLConstants.EEGSystemNames.OpenBCI:
         eeg = CCDLOpenBCI.OpenBCIStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num), port=comport)
     if eeg_system is not None:
-        threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=subject_data_folder_path + 'Subject%s_eeg.csv' % subject_num, queue=data_save_queue)).start()
+        save_data_file_path = subject_data_folder_path + 'Subject%s_eeg.csv' % subject_num
+        if vebose:
+            print "Saving EEG data to:\t", save_data_file_path
+        threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=save_data_file_path, queue=data_save_queue)).start()
         threading.Thread(target=lambda: eeg.start_recording()).start()
     return eeg, data_save_queue
 
 
-def run_pygame(queue):
+def run_pygame(queue, window_x_pos=-1920):
     """
     Run in a new process to start the pygame crosshair.
     """
-    ccdl_cursor = CCDLPyCross.PyCrosshair(window_x_pos=-1920)
+    ccdl_cursor = CCDLPyCross.PyCrosshair(window_x_pos=window_x_pos)
     # threading.Thread(target=lambda: ccdl_cursor.run_with_queue(queue))
     ccdl_cursor.run_with_queue(q=queue)
 
 
-def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type, take_init, run_arduino, arduino_comport, sleep_dur=3):
+def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type, take_init, run_arduino, arduino_comport, sleep_dur=3, verbose=True):
     """
     Starts our Data collection experiment.
     :param data_storage_path: Path to data storage dir
@@ -96,6 +98,7 @@ def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type
     :param beep_freqs: list - duration of beeps.
     :param arduino_commands: list - list of arduino commands to supply before the trial.  If none, this parameter is ignored.
     :param arduino_queue: queue to put arduino commands in.
+    :param verbose: bool - If true, will print our data path to the console.
     """
     ######################
     # Get Config Queues  #
@@ -112,8 +115,11 @@ def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type
 
     subject_num, subject_data_folder_path, task = get_user_info(data_storage_path, take_init)
 
+    subject_log_file_path = subject_data_folder_path + 'Subject%s_log.txt' % subject_num
     # If we are wanting to save our data, we'll start our logging thread.
-    threading.Thread(target=lambda: CCDLLog.Log(log_queue=logger_queue, subject_log_file_path=data_storage_path + '\Subject%s_log.txt' % subject_num).start_log(verbose=False)).start()
+    threading.Thread(target=lambda: CCDLLog.Log(log_queue=logger_queue, subject_log_file_path=subject_log_file_path).start_log(verbose=False)).start()
+    if verbose:
+        print "Saving log to:\t", subject_log_file_path
 
     # Starts our eeg and saves data.
     eeg, data_save_queue = start_eeg(eeg_system_type, subject_data_folder_path, subject_num)

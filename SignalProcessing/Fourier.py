@@ -24,12 +24,17 @@ def get_channel_fft(single_channel_signal, fs, nperseg, noverlap, filter_sig=Fal
 def get_fft_all_channels(data, fs, nperseg, noverlap):
     """
     Returns a np array of densities - shape(epoch, density, channel) and the frequency list
+
+    data is shape (epoch, sample, channel)
+
     :param data: Must be of the form (epoch, sample, channel)
     :param fs: sampling rate
     :param nperseg: nperseg for welch
     :param noverlap: noverlap for welch
     :return: freqs, np array of densities - shape(epoch, density, channel)
     """
+    if len(data.shape) != 3:
+        raise ValueError("Must be shape (epoch, sample, channel).  Actual Shape %s" % str(data.shape))
     num_channels = data.shape[2]
     dens, freqs = [], None
     for chan in range(num_channels):

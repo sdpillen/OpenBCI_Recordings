@@ -6,6 +6,7 @@ import os
 import time
 import Queue
 import winsound
+import datetime
 import threading
 import multiprocessing
 import CCDLUtil.DataManagement.Log as CCDLLog
@@ -131,7 +132,7 @@ def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type
 
 
 def main_logic(logger_queue, eeg, eeg_system_type, task_description, crosshair_mp_queue, durations, tasks, start_time_list_keys, start_eeg_index_keys, end_time_list_keys, end_eeg_index_keys,
-               num_trials, beep_duration, text_dicts, beep_freqs=(2500, 1000), arduino_commands=None, arduino_queue=None):
+               num_trials, beep_duration, text_dicts, beep_freqs=(2500, 1000), arduino_commands=None, arduino_queue=None, subject_name=None):
 
     """
     Runs our data collection, adding our data the logger queue, supplying text onscreen and supplying commands to the arduino.
@@ -153,6 +154,7 @@ def main_logic(logger_queue, eeg, eeg_system_type, task_description, crosshair_m
     :param arduino_commands: list - list of arduino commands to supply before the trial.  If none, this parameter is ignored.
     :param arduino_queue: queue to put arduino commands in.
     """
+    subject_name = str(subject_name)
     assert len(tasks) == len(start_eeg_index_keys) == len(start_time_list_keys) == len(end_time_list_keys) == len(end_eeg_index_keys) == len(durations) == len(beep_freqs) == len(text_dicts), "All lists must be of the same length."
     if arduino_commands is not None:
         assert len(arduino_commands) == len(tasks), "All lists must be of the same length."
@@ -164,7 +166,9 @@ def main_logic(logger_queue, eeg, eeg_system_type, task_description, crosshair_m
                           'end_time_list_keys':end_time_list_keys, 'end_eeg_index_keys':end_eeg_index_keys,
                           'StartTime': time.time(), 'start_eeg_index': eeg.data_index,
                           'EEG_SYSTEM': eeg_system_type, 'fs': CCDLSI.get_eeg_sampling_rate(eeg_system_type),
-                          'task_description': task_description}) + '\n')
+                          'task_description': task_description,
+                          'subject_name': subject_name,
+                          'date_collected': "{:%B %d, %Y}".format(datetime.datetime.now())}) + '\n')
     start_time = time.time()
     trial_index = 0
     save_dict = None

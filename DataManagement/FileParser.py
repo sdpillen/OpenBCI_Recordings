@@ -63,7 +63,7 @@ def load_matlab_file(mat_file_path):
     return scipy.io.savemat(file_name=mat_file_path)
 
 
-def get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, channel_names, experiment_description, date_collected, fs, time_stamps, packet_indexes, aux_data=None, subject_name=None, save_location_path=None):
+def get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, channel_names, experiment_description, date_collected, fs, time_stamps, packet_indexes, aux_data=None, subject_name=None):
     """
     Returns a dictionary that can be saved in our standard .mat format.  (See readme for more information on this formatting).  If save_location_path is not None, it will also be saved to this location.
 
@@ -95,10 +95,35 @@ def get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, chann
         mdict['aux_data'] = aux_data
     if subject_name is not None:
         mdict['subject_name'] = subject_name
-    if save_location_path is not None:
-        save_matlab_file(mat_file_path=save_location_path, data=mdict)
     return mdict
 
+def save_standard_mat_format(save_path, eeg_system, unepoched_eeg_data, event_markers, channel_names, experiment_description, date_collected, fs, time_stamps, packet_indexes, aux_data=None, subject_name=None, verbose=True):
+    """
+    Returns a dictionary that can be saved in our standard .mat format.  (See readme for more information on this formatting).  If save_location_path is not None, it will also be saved to this location.
+
+    time_stamps or packet_indexes can be None.  If it is None, it will not be included in our returned dictionary.  This method raises a Value error if both are None.
+
+    :param save_path: Where to save the mat file
+    :param eeg_system: string - The EEG System must be a valid system as shown in CCDLUtil.Utility.Constants.EEGSystemNames.ALL_VALID_NAMES
+    :param unepoched_eeg_data: Our unepoched EEG with shape (sample, channel)
+    :param event_markers: Our event markers that could be used for epoching our eeg
+    :param channel_names: list or numpy array - The names of our channels. The length of this list should be equal to unepoched_eeg_data.shape[1].
+    :param experiment_description: sting - A written description of what occurred during the experiment.
+    :param date_collected: string - Denoting the date in which the data was collected.
+    :param fs: int - Our sampling rate in Hz.
+    :param time_stamps: numpy array or None. - The packet arrival times for our data.  This value is usually recorded alongside our eeg data.
+    :param packet_indexes: numpy array or None. - The packet indexes times for our data.  This value is usually recorded alongside our eeg data.
+    :param aux_data: Numpy array or None (defaults to None)
+    :param subject_name: String, Number, or None - The name or number of our subject.
+    :param save_location_path: String or None (defaults to None) - The location in which to save the mat formatted dictionary.  If None, it will not be saved.
+    :return: A dictionary that fits our standard .mat formatting.
+    """
+    mdict = get_standard_mat_format(eeg_system, unepoched_eeg_data, event_markers, channel_names, experiment_description, date_collected, fs, time_stamps, packet_indexes, aux_data=aux_data, subject_name=subject_name)
+
+    save_matlab_file(mat_file_path=save_path, data=mdict)
+    if verbose:
+        print 'Saved mat file to:', save_path
+    return mdict
 
 def iter_loadtxt(filename, delimiter=',', skiprows=0, dtype=float):
     """

@@ -84,7 +84,6 @@ def epoch_data_from_key(eeg_data_indexes, eeg_data, trial_list, start_key_list, 
     return epoched_data_list
 
 
-
 def extract_value_from_list_of_dicts(dictionary_list, key):
     """
     Iterates through a given dictionary for key in key order and returns a list of values for that key order
@@ -148,7 +147,7 @@ def trim_freqs(freqs, density, high=None, low=None):
     the result would be [ 10.  11.  12.  13.  14.]
     
     :param freqs: freqs (numpy array)
-    :param density: density (shape epoch sample channel)
+    :param density: density -- Shape: (epoch, sample, channel) OR (epoch, sample)
     :param high: removes all freqs above and equal to this val . Cast to int if passed a float.
     :param low: removes all freqs below this val.  Cast to int if passed a float.
     :return: freqs, density
@@ -250,3 +249,29 @@ def reepoch_data_with_fixed_window_size(epoched_data, labels, window_size):
 
     # Return our newly reepoched data - shape (epoch, sample, channel)
     return new_data, labels, windows_per_epoch
+
+
+def idempotent_add_channel_dimension(data):
+    """
+    Takes data np array of shape (epoch, channel, channel) or (epoch, sample).  If shape is (epoch, sample), we'll convert it to shape
+     (epoch, channel, 1).  If shape is already (epoch, channel, channel), we'll return data without doing anything
+    :param data: shape (epoch, channel, channel) or (epoch, sample)
+    :return: data with shape (epoch, channel, channel)
+    """
+    if len(data.shape) != 3:
+        return np.expand_dims(data, axis=2)
+    else:
+        return data
+
+
+def idempotent_add_epoch_dimension(data):
+    """
+    Takes data np array of shape (epoch, channel, channel) or (sample, channel).  If shape is (sample, channel), we'll convert it to shape
+     (1, channel, channel).  If shape is already (epoch, channel, channel), we'll return data without doing anything
+    :param data: shape (epoch, channel, channel) or (sample, channel)
+    :return: data with shape (epoch, channel, channel)
+    """
+    if len(data.shape) != 3:
+        return np.expand_dims(data, axis=0)
+    else:
+        return data

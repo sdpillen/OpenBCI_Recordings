@@ -3,9 +3,10 @@ This file is for saving EEG Data
 """
 
 import CCDLUtil.DataManagement.StringParser as StringParser
+import os
 
 
-def start_eeg_data_saving(save_data_file_path, queue, header=None):
+def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
     """
 
     This function is called from the BrainAmpInterface.
@@ -30,11 +31,11 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None):
                     index,time,chan1,chan2,chan3...\n
 
     :param header: Header for the file.  If no header is wanted, pass None.  Defaults to None.
+    :param timeout: If we don't collect any data after timeout seconds, we'll quit all processes.  If none, there won't be a timeout.
 
     :return: Runs infinitely.  Kill by terminating the thread.
     """
     f = file(save_data_file_path, 'w')
-
     # Write our header with only one newline character
     if header is not None:
         if header.endswith('\n'):
@@ -45,7 +46,16 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None):
         f.flush()
     while True:
         # get our components
-        index, t, data = queue.get()
+
+        try:
+            if timeout is None:
+                index, t, data = queue.get()
+            else:
+                index, t, data = queue.get(timeout)
+        except Queue.Empty:
+            print "Data is not being collected."
+            time.sleep(2)
+            os._exit(1)
         index = '' if index is None else str(index) + ','
         t = '' if t is None else str(t) + ','
         if type(data) is list:

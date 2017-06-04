@@ -2,22 +2,22 @@
 This contains methods for collecting data in order to train a classifier for the BrainNet and BIAV experiments.
 """
 
+import os
+import time
+import Queue
+import winsound
 import threading
 import multiprocessing
-import CCDLUtil.DataManagement.FileParser as CCDLFP
-import time
-import CCDLUtil.EEGInterface.EEG_INDEX as CCDLEEGIndex
-import winsound
-import Queue
-import CCDLUtil.EEGInterface.gUSBAmp.GUSBAmpInterface as CCDLGusb
-import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp
-import CCDLUtil.EEGInterface.EEGDataSaver as CCDLEEGDatasaver
-import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
 import CCDLUtil.DataManagement.Log as CCDLLog
 import CCDLUtil.Utility.Constants as CCDLConstants
 import CCDLUtil.Graphics.PyCrosshair as CCDLPyCross
+import CCDLUtil.DataManagement.FileParser as CCDLFP
+import CCDLUtil.Utility.SystemInformation as CCDLSI
+import CCDLUtil.EEGInterface.EEGDataSaver as CCDLEEGDatasaver
+import CCDLUtil.EEGInterface.gUSBAmp.GUSBAmpInterface as CCDLGusb
+import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
 import CCDLUtil.ArduinoInterface.Arduino2LightInterface as CCDLArduino
-import os
+import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp
 
 EYES_CLOSED_TEXT_DICT = {'text': 'Eyes Closed', 'pos': (None, 100), 'color': (0, 0, 255)}
 EYES_OPEN_TEXT_DICT = {'text': 'Eyes Open', 'pos': (None, 100), 'color': (0, 255, 0)}
@@ -60,12 +60,13 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
         eeg = CCDLBrainAmp.BrainAmpStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num))
     elif eeg_system == CCDLConstants.EEGSystemNames.OpenBCI:
         eeg = CCDLOpenBCI.OpenBCIStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num), port=comport)
+
     if eeg_system is not None:
         save_data_file_path = subject_data_folder_path + 'Subject%s_eeg.csv' % subject_num
-        if vebose:
-            print "Saving EEG data to:\t", save_data_file_path
         threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=save_data_file_path, queue=data_save_queue)).start()
         threading.Thread(target=lambda: eeg.start_recording()).start()
+        if vebose:
+            print "Saving EEG data to:\t", os.path.abspath(save_data_file_path)
     return eeg, data_save_queue
 
 
@@ -119,7 +120,7 @@ def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type
     # If we are wanting to save our data, we'll start our logging thread.
     threading.Thread(target=lambda: CCDLLog.Log(log_queue=logger_queue, subject_log_file_path=subject_log_file_path).start_log(verbose=False)).start()
     if verbose:
-        print "Saving log to:\t", subject_log_file_path
+        print "Saving log to:\t", os.path.abspath(subject_log_file_path)
 
     # Starts our eeg and saves data.
     eeg, data_save_queue = start_eeg(eeg_system_type, subject_data_folder_path, subject_num)
@@ -162,7 +163,7 @@ def main_logic(logger_queue, eeg, eeg_system_type, task_description, crosshair_m
                           'start_time_list_keys':start_time_list_keys, 'start_eeg_index_keys':start_eeg_index_keys,
                           'end_time_list_keys':end_time_list_keys, 'end_eeg_index_keys':end_eeg_index_keys,
                           'StartTime': time.time(), 'start_eeg_index': eeg.data_index,
-                          'EEG_SYSTEM': eeg_system_type, 'fs': 5000,
+                          'EEG_SYSTEM': eeg_system_type, 'fs': CCDLSI.get_eeg_sampling_rate(eeg_system_type),
                           'task_description': task_description}) + '\n')
     start_time = time.time()
     trial_index = 0

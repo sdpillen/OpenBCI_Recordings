@@ -134,7 +134,12 @@ def iter_loadtxt(filename, delimiter=',', skiprows=0, dtype=float):
                         raise
         iter_loadtxt.rowlength = line_len
     data = np.fromiter(iter_func(), dtype=dtype)
-    data = data.reshape((-1, iter_loadtxt.rowlength))
+    try:
+        data = data.reshape((-1, iter_loadtxt.rowlength))
+    except AttributeError:
+        print "Check to ensure file is not blank"
+        time.sleep(2)
+        raise
     return data
 
 

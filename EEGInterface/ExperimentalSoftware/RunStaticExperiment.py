@@ -40,11 +40,11 @@ def print_info(message, trial_index, start_time):
     print message, trial_index, '\t', "%d:%02d" % (m, s)
 
 
-def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, vebose=True):
+def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, vebose=True, out_buffer_queue=None, channels_for_live='All'):
     """
     Starts streaming our EEG in a new thread
     :param eeg_system: str - eeg system type
-    :param subject_data_folder_path: path to subject folder
+    :param subject_data_folder_path: path to subject folder.  Doesn't matter if it ends with \ or not.
     :param subject_num: any_type - subject identifier
     :param comport: Port of the EEG system.  This is only needed for using an eeg system that requires it (specifically OpenBCI)
     :return: eeg, data_save_queue
@@ -55,14 +55,16 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
     data_save_queue = Queue.Queue()
     eeg = None
     if eeg_system == CCDLConstants.EEGSystemNames.GUSB_AMP:
-        eeg = CCDLGusb.GUSBAmpStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num))
+        eeg = CCDLGusb.GUSBAmpStreamer(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=str(subject_num))
         threading.Thread(target=lambda: eeg_system.start_recording()).start()
     elif eeg_system == CCDLConstants.EEGSystemNames.BRAIN_AMP:
-        eeg = CCDLBrainAmp.BrainAmpStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num))
+        eeg = CCDLBrainAmp.BrainAmpStreamer(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=str(subject_num))
     elif eeg_system == CCDLConstants.EEGSystemNames.OpenBCI:
-        eeg = CCDLOpenBCI.OpenBCIStreamer(channels_for_live=None, out_buffer_queue=None, data_save_queue=data_save_queue, subject_name=str(subject_num), port=comport)
+        eeg = CCDLOpenBCI.OpenBCIStreamer(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=str(subject_num), port=comport)
 
     if eeg_system is not None:
+        if subject_data_folder_path[-1] != '\\':
+            subject_data_folder_path += '\\'
         save_data_file_path = subject_data_folder_path + 'Subject%s_eeg.csv' % subject_num
         threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=save_data_file_path, queue=data_save_queue)).start()
         threading.Thread(target=lambda: eeg.start_recording()).start()

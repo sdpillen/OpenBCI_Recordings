@@ -57,12 +57,16 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
             Use this to time mark events in your other programs.
 
-        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [], no channels will be put on the out_buffer_queue.
-                                  If 'All', all channels will be placed on the out_buffer_queue.
+        :param channels_for_live: List - a list of channel names (or indexes) to put on the out_buffer_queue. If [], no channels will be put on the out_buffer_queue.
+                                  If 'All', all channels will be placed on the out_buffer_queue.  Channels for live **cannot** be just an int. It must be a list or 'All'.
         :param data_save_queue: queue to put data to save.  If None, data will not be saved.
         :param out_buffer_queue: The channel listed in the channels_for_live parameter will be placed on this queue. This is intended for live data analysis.
                                  If None, no data will be put on the queue.
-                                 Items put on the out buffer queue will be a numpy array (though this can be either a 2D or a 1D numpy array)
+                                 Items put on the out buffer queue will be a numpy array (though this can be either a 2D or a 1D numpy array).
+                                 Data put on this queue is downsampled to 500 Hz.  **Data put on this queue is of the shape (sample, channel)**.
+
+                                 10 Samples are put on this queue at a time.  Thus the actual shape will be (10, channel)
+
         :param subject_name: Optional -- Name of the subject. Defaults to 'None'
         :param subject_tracking_number: Optional -- Subject Tracking Number (AKA TMS group experiment number tracker). Defaults to 'None'
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
@@ -210,7 +214,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                                                                                 data_recieve_time=data_recieve_time, downsampled_matrix=downsampled_matrix)
                     self.data_save_queue.put((None, None, save_string))
 
-                # if we are
+                # The data put on the out buffer queue is downsamled to 500 Hz.
                 if self.put_data_on_out_queue_flag:
                     self.handle_out_buffer_queue(data, resolutions, channel_count, channel_dict)
 

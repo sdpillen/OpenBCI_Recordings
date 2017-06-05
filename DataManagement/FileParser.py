@@ -1,4 +1,5 @@
 import pyaml
+import yaml
 import pickle
 import os
 import argparse
@@ -16,7 +17,7 @@ def load_yaml_file(config_file_path):
     Loads a yaml file and returns the results
     """
     with open(config_file_path, 'r') as stream:
-        d = pyaml.load(stream)
+        d = yaml.load(stream)
     return d
 
 

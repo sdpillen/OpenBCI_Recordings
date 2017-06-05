@@ -35,38 +35,38 @@ class TMS():
     def is_armed(self):
         return web.STIMULATOR.armed
 
-    # returns epoc
-    def tms_fire(self, i):
+    def tms_fire(self, i, sleep_time=1.5):
+        """
+        We fire at a the passed intensity i
+        """
         assert type(i) is int
         assert 0 < i <= 100
+        if not self.is_armed():
+            self.tms_arm()
+            time.sleep(1.5)
         web.STIMULATOR.disable_safety()
         web.STIMULATOR.intensity = i
-        time.sleep(1.5)
+        time.sleep(sleep_time)
         web.STIMULATOR.trigger()
         return time.time()
 
     def tms_disarm(self):
         web.STIMULATOR.armed = False
 
-    def set_intensity(self, intensity):
-        time.sleep(2)
+    def set_intensity(self, intensity, pre_sleep_dur=0, prior_sleep_dur=0):
+        time.sleep(pre_sleep_dur)
         intensity = int(intensity)
         assert 0 < intensity <= 100
         web.STIMULATOR.intensity = intensity
+        time.sleep(prior_sleep_dur)
 
 
 if __name__ == '__main__':
     fire_twice = False
     tms = TMS()
     tms.tms_arm()
-    if fire_twice:
-        time.sleep(0.5)
-        tms.tms_fire(10)
-        time.sleep(2)
-        tms.tms_fire(20)
-        time.sleep(0.5)
-    else:
-        time.sleep(2.5)
-        tms.tms_fire(20)
+    time.sleep(2)
+    tms.tms_fire(20)
+
     time.sleep(0.5)
     tms.tms_disarm()

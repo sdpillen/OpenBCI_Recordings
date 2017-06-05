@@ -1,4 +1,4 @@
-import yaml
+import pyaml
 import pickle
 import os
 import argparse
@@ -16,7 +16,7 @@ def load_yaml_file(config_file_path):
     Loads a yaml file and returns the results
     """
     with open(config_file_path, 'r') as stream:
-        d = yaml.load(stream)
+        d = pyaml.load(stream)
     return d
 
 
@@ -25,7 +25,7 @@ def save_yaml_file(yaml_file_path, data, default_flow_style=True):
     Gets a configuration dictionary for this experiment
     """
     with open(yaml_file_path, 'w') as outfile:
-        yaml.dump(data, outfile, default_flow_style)
+        pyaml.dump(data, outfile, default_flow_style)
 
 
 def save_pickle_file(pickle_file_path, data, protocol=pickle.HIGHEST_PROTOCOL):

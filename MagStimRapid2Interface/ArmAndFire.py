@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, 'C:\Users\Experimenter\PycharmProjects\MagStimInterface')  # This is a hack and should probably be fixed at some point.
+sys.path.insert(0, 'C:\Users\Experimenter\PycharmProjects\MagStimInterface')
 from datetime import datetime
 import web
 from Magstim.MagstimInterface import Rapid2

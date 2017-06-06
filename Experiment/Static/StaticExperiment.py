@@ -20,8 +20,15 @@ import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
 import CCDLUtil.ArduinoInterface.Arduino2LightInterface as CCDLArduino
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp
 
-EYES_CLOSED_TEXT_DICT = {'text': 'Eyes Closed', 'pos': (None, 100), 'color': (0, 0, 255)}
+EYES_CLOSED_TEXT_DICT = {'text': 'Eyes Closed', 'pos': (None, 100), 'color': (0, 0, 255)}  # If pos is None, it will be centered.
 EYES_OPEN_TEXT_DICT = {'text': 'Eyes Open', 'pos': (None, 100), 'color': (0, 255, 0)}
+
+REST_TEXT_DICT = {'text': 'Rest', 'pos': (None, 100), 'color': (255, 0, 255)}  # If pos is None, it will be centered.
+LOOK_AT_LIGHT_TEXT_DICT = {'text': 'Look At Light', 'pos': (None, 100), 'color': (0, 255, 0)}
+
+LOOK_AT_LEFT_LIGHT_TEXT_DICT = {'text': 'Look At Left Light', 'pos': (None, 100), 'color': (255, 0, 0)}
+LOOK_AT_RIGHT_LIGHT_TEXT_DICT = {'text': 'Look At Right Light', 'pos': (None, 100), 'color': (0, 0, 255)}
+
 END_TEXT_DICT = {'text': 'Task Complete', 'pos': (None, 100), 'color': (255, 0, 0)}
 
 
@@ -51,6 +58,7 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
             eeg - a reference to our eeg object
             data_save_queue - q that eeg data is put in order to be saved.
     """
+
     # # Start our threads for running the EEG.
     data_save_queue = Queue.Queue()
     eeg = None
@@ -65,7 +73,7 @@ def start_eeg(eeg_system, subject_data_folder_path, subject_num, comport=None, v
     if eeg_system is not None:
         if subject_data_folder_path[-1] != '\\':
             subject_data_folder_path += '\\'
-        save_data_file_path = subject_data_folder_path + 'Subject%s_eeg.csv' % subject_num
+        save_data_file_path = subject_data_folder_path + 'Subject%s_eeg.csv' % str(subject_num)
         threading.Thread(target=lambda: CCDLEEGDatasaver.start_eeg_data_saving(save_data_file_path=save_data_file_path, queue=data_save_queue)).start()
         threading.Thread(target=lambda: eeg.start_recording()).start()
         if vebose:
@@ -82,7 +90,7 @@ def run_pygame(queue, window_x_pos=-1920):
     ccdl_cursor.run_with_queue(q=queue)
 
 
-def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type, take_init, run_arduino, arduino_comport, sleep_dur=3, verbose=True):
+def static_eeg_data_collection_experiment_setup(data_storage_path, eeg_system_type, take_init, run_arduino, arduino_comport, sleep_dur=3, verbose=True):
     """
     Starts our Data collection experiment.
     :param data_storage_path: Path to data storage dir
@@ -111,7 +119,7 @@ def run_static_eeg_data_collection_experiment(data_storage_path, eeg_system_type
     crosshair_mp_queue = multiprocessing.Queue()
     multiprocessing.Process(target=run_pygame, args=(crosshair_mp_queue,)).start()
 
-    logger_queue = Queue.Queue()
+    logger_queue = Queue.Queue()  # multithreading queue
     arduino_queue = Queue.Queue()
 
     if run_arduino:

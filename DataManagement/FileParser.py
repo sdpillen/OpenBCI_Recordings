@@ -207,7 +207,7 @@ def load_ast_dictionary_by_trial(file_path, header_size=0, record_header=True):
             if len(line) > 0:
                 if line_index < header_size:
                     if record_header:
-                        header_list.append(ast.literal_eval(line[:-1]))
+                        header_list.append(ast.literal_eval(line[:-1]))  # -1 is to remove newline character.
                 else:
                     if line.endswith('\n'):
                         trial_list.append(ast.literal_eval(line[:-1]))

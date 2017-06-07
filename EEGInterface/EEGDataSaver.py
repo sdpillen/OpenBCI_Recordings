@@ -4,6 +4,7 @@ This file is for saving EEG Data
 
 import CCDLUtil.DataManagement.StringParser as StringParser
 import os
+import Queue
 
 
 def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):

@@ -1,5 +1,5 @@
-int LED3 = 2;
-int LED4 = 3;
+int LED3 = 6;
+int LED4 = 7;
 // 38 = Yes = 13 Hz
 // 42 = No = 12 Hz
 // 500 = 1 Hz for testing

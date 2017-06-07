@@ -43,8 +43,9 @@ import pygame
 import sys
 import os
 import Queue
+import CCDLUtil.Graphics.PyCrosshair as CCDLCrosshair
 
-class CursorTask(object):
+class CursorTask(CCDLCrosshair.PyCrosshair):
 
     """
     This class manages a cursor task graphics.  All logic is abstracted -- this is only for displaying items on screen
@@ -685,13 +686,23 @@ class CursorTask(object):
                 color = text_dict['color']
                 x, y= text_dict['pos']
                 text = text_dict['text']
+                if x is None or y is None:
+                    center_x, center_y = self.get_coords_for_message_center(text)
+                    x = center_x if x is None else x
+                    y = center_y if y is None else y
                 answer_txt = self.font.render(text, False, color)
                 self.screen.blit(answer_txt, (x, y))
+
         else:
             text_dict = self.text_dictionary_list
             color = text_dict['color']
             x, y = text_dict['pos']
             text = text_dict['text']
+            if x is None or y is None:
+                center_x, center_y = self.get_coords_for_message_center(text)
+                x = center_x if x is None else x
+                y = center_y if y is None else y
+
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
 
@@ -701,4 +712,4 @@ class CursorTask(object):
         self.screen.blit(answer_txt, (1775, 540))
 
 if __name__ == '__main__':
-    CursorTask().run_with_keys()
+    CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}).run_with_keys()

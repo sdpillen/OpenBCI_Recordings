@@ -1,4 +1,3 @@
-import ML
 import numpy as np
 import CCDLUtil.ML.CrossValidation as CCDLCV
 import CCDLUtil.DataManagement.Log as CCDLLog
@@ -10,10 +9,12 @@ import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 import CCDLUtil.DataManagement.FileParser as CCDLFileParser
 import CCDLUtil.EEGInterface.EEGDataSaver as CCDLEEGDatasaver
 import CCDLUtil.EEGInterface.gUSBAmp.GUSBAmpInterface as CCDLGusb
+import CCDLUtil.Experiment.Static.Static_ML_Util as CCDL_Static_ML
 import CCDLUtil.EEGInterface.OpenBCI.OpenBCIStreamer as CCDLOpenBCI
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import CCDLUtil.ArduinoInterface.Arduino2LightInterface as CCDLArduino
 import CCDLUtil.EEGInterface.BrainAmp.BrainAmpInterface as CCDLBrainAmp
+import CCDLUtil.Experiment.Static.StaticConstants as CCDLStaticConstants
 
 CLASSIFICATION_WINDOW_SIZE_SECONDS = 6  # TODO change this to 6
 
@@ -112,7 +113,7 @@ def save_classifier(log_file_path, classifier, verbose=True):
         print "Classifier saved to:", new_path
 
 
-def main(log_file_path, eeg_file_path, eeg_type, channel_list, channel_dict, labels, relevant_indexes, extract_by='indexes'):
+def main(log_file_path, eeg_file_path, eeg_type, channel_list, channel_dict, labels, relevant_indexes, feature_type, left_ssvep=11, right_ssvep=13, extract_by='indexes'):
     start_eeg_index_keys, start_time_list_keys, end_eeg_index_keys, end_time_list_keys, tasks, eeg_type, task_description, eeg_indexes, clock_times, \
         eeg_data, fs, date_collected, subject_name, aux_data, trial_list, header_list = extract_csv(log_file_path, eeg_file_path)
 
@@ -154,7 +155,15 @@ def main(log_file_path, eeg_file_path, eeg_type, channel_list, channel_dict, lab
     freqs, density = CCDLFourier.get_fft_all_channels(data=rewindowed_epoched_data, fs=fs, nperseg=nperseg, noverlap=noverlap)
 
     # Todo fix this so it can do more than just alpha.
-    feature_names, features = ML.extact_alpha_features_single_channel(freqs=freqs, density_from_only_relevant_channels=density, inclusive_exclusive_alpha_band=(8, 13))
+    if feature_type == CCDLStaticConstants.ALPHA:
+        feature_names, features = CCDL_Static_ML.extact_alpha_features_single_channel(freqs=freqs, density_from_only_relevant_channels=density, inclusive_exclusive_alpha_band=(8, 13))
+    elif feature_type == CCDLStaticConstants.SSVEP_ALPHA:
+        feature_names, features = CCDL_Static_ML.extact_alpha_features_single_channel(freqs=freqs, density_from_only_relevant_channels=density, inclusive_exclusive_alpha_band=(8, 14))
+    elif feature_type == CCDLStaticConstants.SSVEP_LR:
+        feature_names, features = CCDL_Static_ML.extract_ssvep_features(freqs=freqs, density_from_only_relevant_channels=density, freq_left=left_ssvep, freq_right=right_ssvep)
+    else:
+        raise
+    features = features.squeeze()
 
     """ Fit Our Classifier """
     print "Cross Validation Score:", np.average(CCDLCV.run_leave_one_out_cv(features=features, labels=labels))

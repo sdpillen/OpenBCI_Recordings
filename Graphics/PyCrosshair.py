@@ -184,6 +184,7 @@ class PyCrosshair(object):
         """
         pygame.event.clear()
 
+
     def draw_shapes(self):
         """
         Draws our boards according to how the flags of this class are set.
@@ -239,6 +240,23 @@ class PyCrosshair(object):
                 y = center_y if y is None else y
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
+
+    def blt_text(self, text, x, y, color=(255, 255, 255)):
+        """
+        Shows text on screen at the passed x and y coords.
+
+        If x is None or Y is none, text will be displayed in the middle of the screen
+        :param text: str - text to show
+        :param x: x coord. If none, we'll show in center
+        :param y: x coord. If none, we'll show in center
+        :param color: rgb, defaults to white.
+        :return:
+        """
+        center_x, center_y = self.get_coords_for_message_center(text)
+        x = center_x if x is None else x
+        y = center_y if y is None else y
+        text = self.font.render(text, False, color)
+        self.screen.blit(text, (x, y))
 
     def get_coords_for_message_center(self, msg):
         """

@@ -5,8 +5,8 @@
 // "Pins 0 and 1 are used for serial communications. It's really not possible to use pins 0 and 1 for external circuitry 
 //    and still be able to utilize serial communications or to upload new sketches to the board."
 
-const int LED3 = 2;  // Shown on the case as slot 3
-const int LED4 = 3;  // // Shown on the case as slot 4
+const int LED3 = 6;  // Shown on the case as slot 3
+const int LED4 = 7;  // // Shown on the case as slot 4
 
 // Messages we can send to the board
 const unsigned char NO_MSG = 0;
@@ -23,10 +23,12 @@ const unsigned char LIGHT_4_DEACTIVATE_MSG = 6;
 // 500 = 1 Hz for testing
 
 // Other values:
-// 17 Hz = 29
+// 5 Hz = 100
+// 7 Hz = 71
+// 11 Hz = 
 // 13 Hz = 38
-// 7 hz = 71
-// 5 hz = 100
+// 17 Hz = 29
+
 
 // Interval that the light remains on (and off) when blinking in ms.  For example if set to 500, the light would be on for 500 ms, then off for 500 ms, flashing at 1 hz.
 const unsigned long LED3_interval = 29;  // Left light
@@ -42,7 +44,7 @@ unsigned char light3_active;  // Is the light active? This is our flag to tell.
 unsigned char light4_active;
 
 void setup () {
-  msg = 2;  // 2 --Default to all off (1 is both on)
+  msg = 1;  // 2 --Default to all off (1 is both on; 2 is both off)
   Serial.begin(9600);
   pinMode (LED3, OUTPUT);
   pinMode (LED4, OUTPUT);

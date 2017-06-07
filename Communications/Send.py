@@ -40,7 +40,7 @@ class Send(object):
 if __name__ == '__main__':
     SEND_MESSAGE_QUEUE = Queue.Queue()
     PERSONAL_COMPUTER_IP = '173.250.180.118'
-    SEND_OBJECT = Send(host_ip=PERSONAL_COMPUTER_IP, port=13000, send_message_queue=SEND_MESSAGE_QUEUE)
+    SEND_OBJECT = Send(host_ip='128.208.5.218', port=13000, send_message_queue=SEND_MESSAGE_QUEUE)
     threading.Thread(target=SEND_OBJECT.run_send_from_queue).start()
     while True:
         data = raw_input("Enter message to send or type 'exit': ")

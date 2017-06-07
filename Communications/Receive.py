@@ -39,6 +39,7 @@ class Receive(object):
         """
         while True:
             message, addr = self.UDPSock.recvfrom(self.buf)
+            'got message from queue', message
             self.receive_message_queue.put(message)
             if message == "exit":
                 self.UDPSock.close()

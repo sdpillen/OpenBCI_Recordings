@@ -31,8 +31,7 @@ class Send(object):
         
         Data put on queue will be cast to a string!
         """
-        message = str(self.send_message_queue.get())
-        print "Relaying message from queue to send", message
-        self.UDPSock.sendto(message, self.addr)
-        if message.lower() == "exit":
-            self.UDPSock.close()
+        while True:
+            message = str(self.send_message_queue.get())
+            print "Relaying message from queue to send", message
+            self.UDPSock.sendto(message, self.addr)

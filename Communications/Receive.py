@@ -7,6 +7,8 @@ to a string.
 
 import os
 import socket
+import Queue
+import threading
 
 
 class Receive(object):
@@ -39,7 +41,32 @@ class Receive(object):
         """
         while True:
             message, addr = self.UDPSock.recvfrom(self.buf)
-            'got message from queue', message
             self.receive_message_queue.put(message)
             if message == "exit":
                 self.UDPSock.close()
+
+if __name__ == '__main__':
+    RECEIVE_MESSAGE_QUEUE = Queue.Queue()
+    RECEIVE_OBJECT = Receive(port=13000, receive_message_queue=RECEIVE_MESSAGE_QUEUE)
+    threading.Thread(target=RECEIVE_OBJECT.receive_from_queue).start()
+    while True:
+        data = RECEIVE_MESSAGE_QUEUE.get()
+        print "Received message: " + data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

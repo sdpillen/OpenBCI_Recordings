@@ -18,9 +18,9 @@ class Receive(object):
         :param port: Set to desired port. Only one Send object can be opened on a given port. Example: 13000
         :param send_message_queue: Place messages on this queue to have them sent.
         """
-        host = ""
-        port = 13000
-        self.buf = 1024
+        host = host
+        port = port
+        self.buf = buf
         self.addr = (host, port)
         self.UDPSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.UDPSock.bind(self.addr)

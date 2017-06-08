@@ -33,11 +33,10 @@ class TCPClient(object):
 
         Data put on queue will be cast to a string!
         """
-        while True:
-            message = str(self.send_message_queue.get())
-            self.TCPSock.send(message)
-            back_msg = self.TCPSock.recv(self.buf)
-            print "Server sends back: " + back_msg
+        message = str(self.send_message_queue.get())
+        self.TCPSock.send(message)
+        back_msg = self.TCPSock.recv(self.buf)
+        print "Server sends back: " + back_msg
 
 
 

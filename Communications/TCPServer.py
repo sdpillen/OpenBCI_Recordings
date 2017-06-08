@@ -37,7 +37,7 @@ class TCPServer(object):
             print "received message: " + message
             if message == "exit":
                 self.TCPSock.close()
+            self.sent_back_to_client()
 
     def sent_back_to_client(self):
-        while True:
-            self.conn.sendall(self.receive_message_queue.get())
+        self.conn.sendall(self.receive_message_queue.get())

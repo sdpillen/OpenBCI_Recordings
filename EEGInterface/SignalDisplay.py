@@ -46,24 +46,24 @@ def FeatureDisplay(DISPLAYSURF, channel): #Delineates the sections and labels th
 
     for x in range (0,5):
         pygame.draw.line(DISPLAYSURF, BLUE, (x*(WINDOWWIDTH-20)/5, WINDOWHEIGHT / 2), (x*(WINDOWWIDTH-20)/5, 0), 1)
-    resultSurf = SCOREFONT.render('EEG Trace: Channel ' + str(channel), True, WHITE)
-    resultRect = resultSurf.get_rect()
-    resultRect.center = (WINDOWWIDTH / 2, 25)
-    DISPLAYSURF.blit(resultSurf, resultRect)
+    resultsurf = SCOREFONT.render('EEG Trace: Channel ' + str(channel), True, WHITE)
+    result_rect = resultsurf.get_rect()
+    result_rect.center = (WINDOWWIDTH / 2, 25)
+    DISPLAYSURF.blit(resultsurf, result_rect)
     pygame.draw.rect(DISPLAYSURF, WHITE, ((0, 0), (WINDOWWIDTH, WINDOWHEIGHT)), LINETHICKNESS * 2)
     pygame.draw.line(DISPLAYSURF, WHITE, (0, WINDOWHEIGHT / 2), (WINDOWWIDTH, WINDOWHEIGHT / 2), (LINETHICKNESS))
 
 
     for x in range (1,9):
-        resultSurf = BASICFONT.render(str(x*5), True, WHITE)
-        resultRect = resultSurf.get_rect()
-        resultRect.center = (x*(WINDOWWIDTH-20)/8, WINDOWHEIGHT-30)
+        resultsurf = BASICFONT.render(str(x*5), True, WHITE)
+        result_rect = resultsurf.get_rect()
+        result_rect.center = (x*(WINDOWWIDTH-20)/8, WINDOWHEIGHT-30)
         pygame.draw.line(DISPLAYSURF, WHITE, (x*(WINDOWWIDTH-20)/8, WINDOWHEIGHT), (x*(WINDOWWIDTH-20)/8, WINDOWHEIGHT-20), 2)
-        DISPLAYSURF.blit(resultSurf, resultRect)
-    resultSurf = SCOREFONT.render('Spectrum: Channel ' + str(channel), True, WHITE)
-    resultRect = resultSurf.get_rect()
-    resultRect.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2 + 25)
-    DISPLAYSURF.blit(resultSurf, resultRect)
+        DISPLAYSURF.blit(resultsurf, result_rect)
+    resultsurf = SCOREFONT.render('Spectrum: Channel ' + str(channel), True, WHITE)
+    result_rect = resultsurf.get_rect()
+    result_rect.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2 + 25)
+    DISPLAYSURF.blit(resultsurf, result_rect)
 
 
 # Main function
@@ -115,35 +115,31 @@ def main():
                 quittingtime = True
                 break
             # This portion does keypresses
-            if event.type == pygame.KEYDOWN:  # press space to terminate pauses between blocs
-                if event.key == pygame.K_c:
-                    COLORTOGGLE = not COLORTOGGLE
-                if event.key == pygame.K_SPACE:
-                    print 'space'
-                if event.key == pygame.K_LEFT:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:  #hitting left changes the EEG channel
                     channel -= 1
                     if channel == -1:
                         channel = 2
                     print channel
-                if event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_RIGHT: #right changes channel in the opposite direction in the montage
                     channel += 1
                     if channel == 3:
                         channel = 0
                     print channel
-                if event.key == pygame.K_UP:
-                    SizeMultiplier += .1
-                if event.key == pygame.K_DOWN:
-                    SizeMultiplier -= .1
+                if event.key == pygame.K_UP:    #This magnifies the trace
+                    SizeMultiplier *= 1.5
+                if event.key == pygame.K_DOWN:  #this reduces the trace
+                    SizeMultiplier *= 0.75
                     if SizeMultiplier <= 0:
-                        SizeMultiplier = .1
-                if event.key == pygame.K_KP_PLUS:
-                    SpecMultiplier *= 2
-                if event.key == pygame.K_KP_MINUS:
-                    SpecMultiplier *= 0.5
+                        SizeMultiplier = 0.1
+                if event.key == pygame.K_KP_PLUS:   #This increases the scaling on the spectra map
+                    SpecMultiplier *= 1.5
+                if event.key == pygame.K_KP_MINUS:  #This reduces the spectra scaling
+                    SpecMultiplier *= 0.75
 
         if time.time() > dummyindex:
             dummyindex = dummyindex+.1
-            Values = np.concatenate((Values, np.random.rand(3, 500)*50), 1)
+            Values = np.concatenate((Values, np.random.rand(3, 500)*50), 1)  # Randomly generated values.
             if len(Values[0, :]) > 25000:
                 Values = Values[:, -25000:]
 
@@ -153,32 +149,38 @@ def main():
         if quittingtime == True:
             break
 
-        DISPLAYSURF.fill((0, 0, 0))
+        DISPLAYSURF.fill((0, 0, 0))     #Clean the slate
 
-        timeseriesindex = 0  # This is each individual point in the series.
-        numpairs = []
-        BaselinedValues = Values - np.mean(Values)
+
+        #This portion handles the EEG trace generation
+        timeseriesindex = 0             # This is each individual x value in the series.
+        numpairs = []                   #this will contain the xy pairs for the EEG positions
+        BaselinedValues = Values - np.mean(Values)  #subtracting the mean prevents drift from shifting things too far
         for x in BaselinedValues[channel,0::50]:
-            timeseriesindex += 2  # The increment of the x axis. higher number means denser trace
-            numpairs.append([10 + timeseriesindex, x*SizeMultiplier + WINDOWHEIGHT/4])
-        #if COLORTOGGLE:
-        #    pygame.draw.lines(DISPLAYSURF, color, False, numpairs, 1)
-        #else:
-        pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)
+            timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
+            yposition = x*SizeMultiplier + WINDOWHEIGHT/4
+            #This keeps the trace in its window space
+            if yposition > WINDOWHEIGHT/2:
+                yposition = WINDOWHEIGHT/2
+            numpairs.append([10 + timeseriesindex, yposition])      #this is the x,y coordinates being assigned
+        pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots
 
-        if len(Values[0,:]) ==25000:
+        #This is for the Spectral visualizer.
+        if len(Values[0, :]) == 25000:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
             freq, density = sig.welch(BaselinedValues[channel, :], fs=5000, nperseg=25000, noverlap=None, scaling='density')
             timeseriesindex = 0
             numpairs = []
             for x in freq[0:205:5]:
-                numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier])
+                height = (WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier) #500 is an arbitrary value I used to make it visible
+                if height < WINDOWHEIGHT/2 + 10:
+                    height = WINDOWHEIGHT/2 + 10
+                numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, height])
                 timeseriesindex += 1
-            numpairs
             pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
 
 
 
-        # Draw outline of arena
+        # Draw outline of arena, comes last so it overlaps all
         FeatureDisplay(DISPLAYSURF, channel)
 
 

@@ -8,22 +8,28 @@ import os
 import socket
 import threading
 import Queue
-import warnings
 
 
 class TCPClient(object):
 
-    def __init__(self, server_ip, port, send_message_queue, buf=1024):
+    def __init__(self, server_ip, port, receive_message_queue, send_message_queue, buf=1024):
         self.buf = buf
         self.ip = server_ip
         self.port = port
-        self.send_message_queue = send_message_queue
         # try to connect to server
         self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TCPSock.connect((self.ip, self.port))
 
+        self.send_message_queue = send_message_queue
+        self.receive_message_queue = receive_message_queue
 
-    def send_to_client(self):
+    def start_receive_from_queue(self):
+        while True:
+            received_message = self.TCPSock.recv(self.buf)
+            print "Server sends: " + received_message
+            self.receive_message_queue.put(received_message)
+
+    def start_send_to_queue(self):
         """
         Reads messages from the send_messages_queue passed during initialization
 
@@ -33,10 +39,13 @@ class TCPClient(object):
 
         Data put on queue will be cast to a string!
         """
-        message = str(self.send_message_queue.get())
-        self.TCPSock.send(message)
-        back_msg = self.TCPSock.recv(self.buf)
-        print "Server sends back: " + back_msg
+        while True:
+            message_to_send = str(self.send_message_queue.get())
+            print "Sending", message_to_send
+            self.TCPSock.send(message_to_send)
+
+
+
 
 
 

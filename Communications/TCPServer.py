@@ -2,7 +2,7 @@ import socket
 
 class TCPServer(object):
 
-    def __init__(self, port, receive_message_queue, host="", buf=1024):
+    def __init__(self, port, receive_message_queue, send_message_queue, host="", buf=1024):
         """
         Sends messages to the specified host and port for computers on the same network.
         :param host: Defaults to ""
@@ -19,8 +19,9 @@ class TCPServer(object):
         # accept the connection
         self.conn, self.client_addr = self.TCPSock.accept()
         self.receive_message_queue = receive_message_queue
+        self.send_message_queue = send_message_queue
 
-    def receive_from_queue(self):
+    def start_receive_from_queue(self):
         """
         Receives messages and passes them to the receive_message_queue passed during initialization
     
@@ -37,7 +38,9 @@ class TCPServer(object):
             print "received message: " + message
             if message == "exit":
                 self.TCPSock.close()
-            self.sent_back_to_client()
 
-    def sent_back_to_client(self):
-        self.conn.sendall(self.receive_message_queue.get())
+    def start_send_to_queue(self):
+        while True:
+            message_to_send = self.send_message_queue.get()  # blocking call
+            print "Sending... ", message_to_send
+            self.conn.sendall(message_to_send)

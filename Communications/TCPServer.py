@@ -13,13 +13,13 @@ class TCPServer(object):
         :param port: Set to desired port. Only one Send object can be opened on a given port. Example: 13000
         :param send_message_queue: Place messages on this queue to have them sent.
         """
-        host = host
-        port = port
+        self.port = port
         self.buf = buf
-        self.addr = (host, port)
+        self.addr = ('', self.port)
         # TCP
         self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TCPSock.bind(self.addr)
+        self.TCPSock.listen(1)
         # accept the connection
         self.conn, self.client_addr = self.TCPSock.accept()
         self.receive_message_queue = receive_message_queue

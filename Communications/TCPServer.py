@@ -1,17 +1,10 @@
-"""
-This method is for receiving messages between computers on the same network.
-
-Messages are sent as strings.  If sending a nonstring object, it will be converted
-to a string.
-"""
-
 import os
 import socket
 import Queue
 import threading
 import warnings
 
-class Receive(object):
+class TCPServer(object):
 
     def __init__(self, port, receive_message_queue, host="", buf=1024):
         """
@@ -24,53 +17,31 @@ class Receive(object):
         port = port
         self.buf = buf
         self.addr = (host, port)
-        self.UDPSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.UDPSock.bind(self.addr)
+        # TCP
+        self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.TCPSock.bind(self.addr)
+        # accept the connection
+        self.conn, self.client_addr = self.TCPSock.accept()
         self.receive_message_queue = receive_message_queue
-        warnings.warn(DeprecationWarning)
 
     def receive_from_queue(self):
         """
         Receives messages and passes them to the receive_message_queue passed during initialization
-
+    
         Received data in accordance with the host and port set during initialization
-
+    
         Pass 'exit' to close the socket.
-
+    
         All data passed is of string format -- meaning all data placed on the receive_message_queue will
         be a string.
         """
         while True:
-            message, addr = self.UDPSock.recvfrom(self.buf)
+            message = str(self.conn.recv(self.buf))
             self.receive_message_queue.put(message)
+            print "received message: " + message
             if message == "exit":
-                self.UDPSock.close()
+                self.TCPSock.close()
 
-if __name__ == '__main__':
-    RECEIVE_MESSAGE_QUEUE = Queue.Queue()
-    RECEIVE_OBJECT = Receive(port=13000, receive_message_queue=RECEIVE_MESSAGE_QUEUE)
-    threading.Thread(target=RECEIVE_OBJECT.receive_from_queue).start()
-    print "Waiting to Receive"
-    while True:
-        data = RECEIVE_MESSAGE_QUEUE.get()
-        print "Received message: " + data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def sent_back_to_client(self):
+        while True:
+            self.conn.sendall(self.receive_message_queue.get())

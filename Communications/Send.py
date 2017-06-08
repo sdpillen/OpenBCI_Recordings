@@ -8,10 +8,12 @@ import os
 import socket
 import threading
 import Queue
+import warnings
 
 class Send(object):
 
     def __init__(self, host_ip, port, send_message_queue):
+
         """
         Sends messages to the specified host and port for computers on the same network.
         
@@ -22,6 +24,7 @@ class Send(object):
         self.addr = (host_ip, port)
         self.UDPSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.send_message_queue = send_message_queue
+        warnings.warn(DeprecationWarning('Use TCP instead'))
 
     def run_send_from_queue(self):
         """

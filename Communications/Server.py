@@ -2,7 +2,7 @@ import EEGInterface.EEG_INDEX as EEG_INDEX
 import SocketServer
 import os
 import time
-
+import warnings
 
 class MyTCPHandler(SocketServer.BaseRequestHandler):
     """
@@ -13,6 +13,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
     client.
     """
     def __init__(self, queue_list=None):
+        raise warnings.warn(DeprecationWarning)
         self.queue_list = [] if queue_list is None else queue_list
 
     def handle(self):

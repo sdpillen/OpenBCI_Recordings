@@ -26,6 +26,8 @@ def get_eeg_sampling_rate(eeg_system, return_channel_info=False):
         fs = 500
     elif eeg_system == CCDLConstants.EEGSystemNames.OpenBCI:
         fs = 250
+    elif eeg_system == CCDLConstants.EEGSystemNames.NO_BCI:
+        fs = None
     else:
         raise ValueError('Invalid or unimplemented eeg system')
     return fs

@@ -7,6 +7,8 @@ to a string.
 
 import os
 import socket
+import Queue
+import threading
 
 
 class Receive(object):
@@ -18,9 +20,9 @@ class Receive(object):
         :param port: Set to desired port. Only one Send object can be opened on a given port. Example: 13000
         :param send_message_queue: Place messages on this queue to have them sent.
         """
-        host = ""
-        port = 13000
-        self.buf = 1024
+        host = host
+        port = port
+        self.buf = buf
         self.addr = (host, port)
         self.UDPSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.UDPSock.bind(self.addr)
@@ -42,3 +44,32 @@ class Receive(object):
             self.receive_message_queue.put(message)
             if message == "exit":
                 self.UDPSock.close()
+
+if __name__ == '__main__':
+    RECEIVE_MESSAGE_QUEUE = Queue.Queue()
+    RECEIVE_OBJECT = Receive(port=13000, receive_message_queue=RECEIVE_MESSAGE_QUEUE)
+    threading.Thread(target=RECEIVE_OBJECT.receive_from_queue).start()
+    print "Waiting to Receive"
+    while True:
+        data = RECEIVE_MESSAGE_QUEUE.get()
+        print "Received message: " + data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

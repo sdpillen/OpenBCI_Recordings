@@ -171,7 +171,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.bar_thickness_y = self.screen_width
         self.bar_thickness_x = target_thickness
         self.left_bar_x = 0
-        self.right_bar_x = 1920 - self.bar_thickness_x
+        self.right_bar_x = self.screen_width - self.bar_thickness_x
 
         # Calculate some measures for code readability
         self.left_barrier = self.left_bar_x + self.bar_thickness_x
@@ -706,10 +706,16 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
 
+        size_x, size_y = self.get_message_size('NO')
+        no_text_location_x = self.screen_width - self.bar_thickness_x // 2 - size_x // 2
+        size_x, size_y = self.get_message_size('YES')
+        yes_text_location_x = self.bar_thickness_x // 2 - size_x // 2
+
         answer_txt = self.font.render('YES', False, (0, 0, 0))
-        self.screen.blit(answer_txt, (25, 540))
+        self.screen.blit(answer_txt, (yes_text_location_x, self.screen_height // 2))
+
         answer_txt = self.font.render('NO', False, (0, 0, 0))
-        self.screen.blit(answer_txt, (1775, 540))
+        self.screen.blit(answer_txt, (no_text_location_x, self.screen_height // 2))
 
 if __name__ == '__main__':
     CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}).run_with_keys()

@@ -148,10 +148,3 @@ def filter_list_by_label(lst, labels):
     negative_list = [i for (i, v) in zip(lst, labels) if v == 0]
     return positive_list, negative_list
 
-
-class DictionaryProcessing(object):
-
-    @staticmethod
-    def two_lists_to_dict(keys, values):
-        Utility.AssertVal.assert_equal(len(keys), len(values))
-        return dict(zip(keys, values))

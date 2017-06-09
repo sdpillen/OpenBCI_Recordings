@@ -6,6 +6,7 @@ import math
 from random import randrange  # for starfield, random number generator
 from random import randint
 import scipy.signal as sig
+import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 
 
 # For debugging NFT; is updated live by visualizer.py.
@@ -113,7 +114,7 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
     #Used for Dummy Data
     dummyindex = time.time() + .1
 
-    values = get_data_packet(data_queue=data_queue)
+    values = None
 
     channel = 0
     SizeMultiplier = 1
@@ -153,10 +154,11 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
         if time.time() > dummyindex:
             dummyindex += .1
             new_values = get_data_packet(data_queue=data_queue)
-            values = np.concatenate((values, new_values), axis=1)  # Randomly generated values.
-            if len(values[0, :]) > fs * 5:
-                values = values[:, -fs * 5:]
-        #needed to exit the program gracefully
+            if new_values is not None:
+                values = CCDLDataParser.stack_epochs(existing=values, new_trial=new_values, axis=1)  # Randomly generated values.
+                if len(values[0, :]) > fs * 5:
+                    values = values[:, -fs * 5:]
+
         if quittingtime:
             break
 
@@ -166,28 +168,30 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
         #This portion handles the EEG trace generation
         timeseriesindex = 0             # This is each individual x value in the series.
         numpairs = []                   #this will contain the xy pairs for the EEG positions
-        BaselinedValues = values - np.mean(values)  #subtracting the mean prevents drift from shifting things too far
-        for x in BaselinedValues[channel,0::50]:
-            timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
-            yposition = x*SizeMultiplier + WINDOWHEIGHT/4
-            #This keeps the trace in its window space
-            if yposition > WINDOWHEIGHT/2:
-                yposition = WINDOWHEIGHT/2
-            numpairs.append([10 + timeseriesindex, yposition])      #this is the x,y coordinates being assigned
-        pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots
 
-        #This is for the Spectral visualizer.
-        if len(values[0, :]) == fs * 5:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
-            freq, density = sig.welch(BaselinedValues[channel, :], fs=fs, nperseg=nperseg, noverlap=noverlap, scaling='density')
-            timeseriesindex = 0
-            numpairs = []
-            for x in freq[0:205:5]:
-                height = (WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier) #500 is an arbitrary value I used to make it visible
-                if height < WINDOWHEIGHT/2 + 10:
-                    height = WINDOWHEIGHT/2 + 10
-                numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, height])
-                timeseriesindex += 1
-            pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
+        if values is not None:
+            BaselinedValues = values - np.mean(values)  #subtracting the mean prevents drift from shifting things too far
+            for x in BaselinedValues[channel,0::50]:
+                timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
+                yposition = x*SizeMultiplier + WINDOWHEIGHT/4
+                #This keeps the trace in its window space
+                if yposition > WINDOWHEIGHT/2:
+                    yposition = WINDOWHEIGHT/2
+                numpairs.append([10 + timeseriesindex, yposition])      #this is the x,y coordinates being assigned
+            pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots
+
+            #This is for the Spectral visualizer.
+            if len(values[0, :]) == fs * 5:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
+                freq, density = sig.welch(BaselinedValues[channel, :], fs=fs, nperseg=nperseg, noverlap=noverlap, scaling='density')
+                timeseriesindex = 0
+                numpairs = []
+                for x in freq[0:205:5]:
+                    height = (WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier) #500 is an arbitrary value I used to make it visible
+                    if height < WINDOWHEIGHT/2 + 10:
+                        height = WINDOWHEIGHT/2 + 10
+                    numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, height])
+                    timeseriesindex += 1
+                pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
 
         # Draw outline of arena, comes last so it overlaps all
         FeatureDisplay(DISPLAYSURF, channel)
@@ -200,7 +204,11 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
 
 def get_data_packet(data_queue):
     ''' Gets the data packet. returns data packet in shape (channel, sample) '''
-    data_packet = data_queue.get()  # taken in as shape (sample, channel)
-    return np.swapaxes(data_packet, axis1=0, axis2=1)
+    import Queue
+    try:
+        data_packet = data_queue.get(False)  # taken in as shape (sample, channel)
+        return np.swapaxes(data_packet, axis1=0, axis2=1)
+    except Queue.Empty:
+        pass
 
 

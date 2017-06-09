@@ -69,7 +69,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         while True:
             sample, timestamp = self.inlet.pull_sample()
             parity += 1
-
+            print sample
             # Get the time we collected the sample
             self.data_index += 1  # Increase our sample counter
 

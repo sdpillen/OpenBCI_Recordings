@@ -94,12 +94,12 @@ def extract_value_from_list_of_dicts(dictionary_list, key):
     return [dictionary[key] for dictionary in dictionary_list]
 
 
-def stack_epochs(existing, new_trial):
+def stack_epochs(existing, new_trial, axis=0):
     """
     Takes existing epoch epoched data (shape epoch, sample trial) and concats a new trial along the first axis.
     If existing is none, returns new trial.
     """
-    return new_trial if existing is None else np.concatenate((existing, new_trial), axis=0)
+    return new_trial if existing is None else np.concatenate((existing, new_trial), axis=axis)
 
 def stack_data_values(existing, value_to_stack, axis):
     """

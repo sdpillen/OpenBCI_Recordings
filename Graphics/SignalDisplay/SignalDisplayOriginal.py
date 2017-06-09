@@ -6,8 +6,6 @@ import math
 from random import randrange  # for starfield, random number generator
 from random import randint
 import scipy.signal as sig
-import CCDLUtil.DataManagement.DataParser as CCDLDataParser
-import Queue
 
 
 # For debugging NFT; is updated live by visualizer.py.
@@ -46,7 +44,7 @@ stage = 0
 
 def FeatureDisplay(DISPLAYSURF, channel): #Delineates the sections and labels them
 
-    for x in range(0,5):
+    for x in range (0,5):
         pygame.draw.line(DISPLAYSURF, BLUE, (x*(WINDOWWIDTH-20)/5, WINDOWHEIGHT / 2), (x*(WINDOWWIDTH-20)/5, 0), 1)
     resultsurf = SCOREFONT.render('EEG Trace: Channel ' + str(channel), True, WHITE)
     result_rect = resultsurf.get_rect()
@@ -69,18 +67,7 @@ def FeatureDisplay(DISPLAYSURF, channel): #Delineates the sections and labels th
 
 
 # Main function
-def main(data_queue, fs, nperseg=None, noverlap=None):
-    """
-
-    :param data_queue: queue to read data from
-    :param fs: sampling rate
-    :param nperseg: If none, defaults to fs / 2
-    :param noverlap: If none, defaults to int(fs * 0.75)
-    :return:
-    """
-    nperseg = int(fs / 2)
-    noverlap = int(fs * 0.4)
-
+def main():
     pygame.init()
     ##Font information
     global BASICFONT, BASICFONTSIZE
@@ -114,9 +101,7 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
 
     #Used for Dummy Data
     dummyindex = time.time() + .1
-
-    values = None
-
+    Values = np.random.rand(3, 500)*50
     channel = 0
     SizeMultiplier = 1
     SpecMultiplier = 1
@@ -153,73 +138,55 @@ def main(data_queue, fs, nperseg=None, noverlap=None):
                     SpecMultiplier *= 0.75
 
         if time.time() > dummyindex:
-            dummyindex += .1
-            new_values = get_data_packet(data_queue=data_queue)
-            if new_values is not None:
-                if len(new_values.shape) == 1:
-                    new_values = np.expand_dims(new_values, axis=1)
-                values = CCDLDataParser.stack_epochs(existing=values, new_trial=new_values, axis=1)  # Randomly generated values.
-                if len(values[0, :]) > fs * 5:
-                    values = values[:, -fs * 5:]
+            dummyindex = dummyindex+.1
+            Values = np.concatenate((Values, np.random.rand(3, 500)*50), 1)  # Randomly generated values.
+            if len(Values[0, :]) > 25000:
+                Values = Values[:, -25000:]
 
-        if quittingtime:
+
+
+        #needed to exit the program gracefully
+        if quittingtime == True:
             break
 
-        DISPLAYSURF.fill((0, 0, 0))     # Clean the slate
+        DISPLAYSURF.fill((0, 0, 0))     #Clean the slate
 
 
         #This portion handles the EEG trace generation
         timeseriesindex = 0             # This is each individual x value in the series.
         numpairs = []                   #this will contain the xy pairs for the EEG positions
+        BaselinedValues = Values - np.mean(Values)  #subtracting the mean prevents drift from shifting things too far
+        for x in BaselinedValues[channel,0::50]:
+            timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
+            yposition = x*SizeMultiplier + WINDOWHEIGHT/4
+            #This keeps the trace in its window space
+            if yposition > WINDOWHEIGHT/2:
+                yposition = WINDOWHEIGHT/2
+            numpairs.append([10 + timeseriesindex, yposition])      #this is the x,y coordinates being assigned
+        pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots
 
-        if values is not None:
-            BaselinedValues = values[channel,:] - np.mean(values[channel,:])  #subtracting the mean prevents drift from shifting things too far
-            # print "Values", values
+        #This is for the Spectral visualizer.
+        if len(Values[0, :]) == 25000:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
+            freq, density = sig.welch(BaselinedValues[channel, :], fs=5000, nperseg=25000, noverlap=None, scaling='density')
+            timeseriesindex = 0
+            numpairs = []
+            for x in freq[0:205:5]:
+                height = (WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier) #500 is an arbitrary value I used to make it visible
+                if height < WINDOWHEIGHT/2 + 10:
+                    height = WINDOWHEIGHT/2 + 10
+                numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, height])
+                timeseriesindex += 1
+            pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
 
-            # print "NP mean", np.mean(values)
-            # print 'baselinevalues', BaselinedValues
-            for x in BaselinedValues[0::fs / 100.0]:
-                timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
-                yposition = x*SizeMultiplier + WINDOWHEIGHT/4
-                #This keeps the trace in its window space
-                if yposition > WINDOWHEIGHT/2:
-                    yposition = WINDOWHEIGHT/2
-                numpairs.append([10 + timeseriesindex, yposition])      #this is the x,y coordinates being assigned
-            if len(numpairs) > 6:
-                pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots\
 
-            #This is for the Spectral visualizer.
-            if len(values[0, :]) == fs * 5:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand.
-
-                #print BaselinedValues[channel, :].shape
-                print BaselinedValues.shape
-                freq, density = sig.welch(BaselinedValues, fs=fs, nperseg=512, noverlap=200, scaling='density')
-                #print 'Density.shape', density.shape
-
-                timeseriesindex = 0
-                numpairs = []
-                for x in freq[0:205:5]:
-                    height = (WINDOWHEIGHT - 10 - density[int(x)]*500*SpecMultiplier) #500 is an arbitrary value I used to make it visible
-                    if height < WINDOWHEIGHT/2 + 10:
-                        height = WINDOWHEIGHT/2 + 10
-                    numpairs.append([10 + timeseriesindex*WINDOWWIDTH/40, height])
-                    timeseriesindex += 1
-                pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
 
         # Draw outline of arena, comes last so it overlaps all
         FeatureDisplay(DISPLAYSURF, channel)
 
 
-        FPSCLOCK.tick(FPS)
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)# Tells the game system that it is not untouched by the inexorable march of time
         pygame.display.update()
 
-
-def get_data_packet(data_queue):
-    ''' Gets the data packet. returns data packet in shape (channel, sample) '''
-    try:
-        data_packet = data_queue.get(False)  # taken in as shape (sample, channel)
-        return np.swapaxes(data_packet, axis1=0, axis2=1)
-    except Queue.Empty:
-        pass
-
-
+if __name__ == '__main__':
+    main()

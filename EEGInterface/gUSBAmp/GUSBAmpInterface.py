@@ -8,6 +8,7 @@ import CCDLUtil.EEGInterface.EEGDataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterfaceParent as CCDLEEGParent
+import CCDLUtil.DataManagement.DataParser as CCDLDataParser
 import pylsl
 
 
@@ -15,7 +16,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
     def __init__(self, channels_for_live, out_buffer_queue, put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None,
-                 misc_queue_list=None, misc_queue_list_channels=None):
+                 misc_queue_list=None, misc_queue_list_channels=None, samples_to_save=1):
         """
         A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
 
@@ -47,7 +48,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
             raise ValueError('Misc_queue_list and misc_queue_list_channels must be the same length')
         self.misc_queue_list, self.misc_queue_list_channels = misc_queue_list, misc_queue_list_channels
         self.zipped_misc_queue_and_channel_list = zip(self.misc_queue_list, self.misc_queue_list_channels)
-
+        self.samples_to_save = samples_to_save
 
         # first resolve an EEG stream on the lab network
         print "looking for an EEG stream..."
@@ -63,20 +64,27 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         """
         Start our recording
         """
-        parity = 0
         print "Starting recording..."
+
+        # samples to save counter
+        counter = 0
+
+        misc_queue_buffer = None
+
         # ##### Main Loop #### #
         while True:
             sample, timestamp = self.inlet.pull_sample()
-            parity += 1
-            print sample
+            if self.current_index == 0:
+                print "Receiving Data:", sample
+
+
             # Get the time we collected the sample
             self.data_index += 1  # Increase our sample counter
 
             CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX = self.data_index
             CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX_2 = self.data_index
             self.current_index = self.data_index
-
+            counter += 1
             # print self.data_index, CCDLUtil.EEGInterface.EEG_INDEX.EEG_INDEX
             ###################
             # Handle the Data #
@@ -85,7 +93,7 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
             if self.data_save_queue is not None:
                 self.data_save_queue.put((self.data_index, timestamp, sample))
 
-            # Put dota on the out queue
+            # Put data on the out queue
             if self.put_data_on_out_queue_flag and self.out_buffer_queue is not None and self.channels_for_live is not None and self.channels_for_live != []:
                 # Only put on the channels we need.  self.channels_for_live is guaranteed lower case... we'll program defensively
                 if self.channels_for_live == 'all' or self.channels_for_live == 'All' or self.channels_for_live == 'ALL':
@@ -94,16 +102,22 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
                     trimmed_data_for_out_queue = [sample[index] for index in self.channels_for_live]
                 self.out_buffer_queue.put(trimmed_data_for_out_queue)
 
+
             ''' Take care of putting data on our misc queues. '''
             for misc_queue, wanted_misc_channels in self.zipped_misc_queue_and_channel_list:
                 if wanted_misc_channels.lower().strip() == 'all':
-                    trimmed_data_for_out_queue = sample
+                    trimmed_data_for_out_queue = np.asarray(sample)
                 else:
-                    trimmed_data_for_out_queue = [sample[index] for index in wanted_misc_channels]
-                misc_queue.put(trimmed_data_for_out_queue)
+                    trimmed_data_for_out_queue = np.asarray([sample[index] for index in wanted_misc_channels])
 
-
-
+                trimmed_data_for_out_queue = np.expand_dims(trimmed_data_for_out_queue, axis=0)
+                assert len(trimmed_data_for_out_queue.shape) == 2
+                misc_queue_buffer = CCDLDataParser.stack_epochs(existing=misc_queue_buffer, new_trial=trimmed_data_for_out_queue, axis=0)
+                # when we save up enough samples, send them to out queue
+                if counter >= self.samples_to_save:
+                    print 'misc shape', misc_queue_buffer.shape
+                    misc_queue.put(misc_queue_buffer)
+                    counter = 0
 
 
 if __name__ == '__main__':

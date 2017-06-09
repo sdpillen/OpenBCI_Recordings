@@ -14,7 +14,8 @@ import pylsl
 class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
 
 
-    def __init__(self, channels_for_live, out_buffer_queue, put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
+    def __init__(self, channels_for_live, out_buffer_queue, put_data_on_out_queue_flag=False, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None,
+                 misc_queue_list=None, misc_queue_list_channels=None):
         """
         A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
 
@@ -35,11 +36,18 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
         """
 
-
-
         # Call our EEGInterfaceParent init method.  Channels_for_live is converted to lower case in super call if it is a string.
         super(GUSBAmpStreamer, self).__init__(channels_for_live, out_buffer_queue, data_save_queue=data_save_queue, put_data_on_out_queue_flag=put_data_on_out_queue_flag,
                                               subject_name=subject_name, subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
+
+        ''' Make sure our misc_queue list and misc_queue_list_channels are proper.'''
+        if misc_queue_list is not None and misc_queue_list_channels is None:
+            misc_queue_list_channels = ['All'] * len(misc_queue_list)
+        elif misc_queue_list is not None and len(misc_queue_list) != len(misc_queue_list_channels):
+            raise ValueError('Misc_queue_list and misc_queue_list_channels must be the same length')
+        self.misc_queue_list, self.misc_queue_list_channels = misc_queue_list, misc_queue_list_channels
+        self.zipped_misc_queue_and_channel_list = zip(self.misc_queue_list, self.misc_queue_list_channels)
+
 
         # first resolve an EEG stream on the lab network
         print "looking for an EEG stream..."
@@ -85,6 +93,17 @@ class GUSBAmpStreamer(CCDLEEGParent.EEGInterfaceParent):
                 else:
                     trimmed_data_for_out_queue = [sample[index] for index in self.channels_for_live]
                 self.out_buffer_queue.put(trimmed_data_for_out_queue)
+
+            ''' Take care of putting data on our misc queues. '''
+            for misc_queue, wanted_misc_channels in self.zipped_misc_queue_and_channel_list:
+                if wanted_misc_channels.lower().strip() == 'all':
+                    trimmed_data_for_out_queue = sample
+                else:
+                    trimmed_data_for_out_queue = [sample[index] for index in wanted_misc_channels]
+                misc_queue.put(trimmed_data_for_out_queue)
+
+
+
 
 
 if __name__ == '__main__':

@@ -66,7 +66,7 @@ if __name__ == '__main__':
     tms = TMS()
     tms.tms_arm()
     time.sleep(2)
-    tms.tms_fire(20)
+    tms.tms_fire(1)
 
     time.sleep(0.5)
     tms.tms_disarm()

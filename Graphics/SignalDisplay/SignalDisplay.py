@@ -44,7 +44,7 @@ stage = 0
 
 def FeatureDisplay(DISPLAYSURF, channel): #Delineates the sections and labels them
 
-    for x in range (0,5):
+    for x in range(0,5):
         pygame.draw.line(DISPLAYSURF, BLUE, (x*(WINDOWWIDTH-20)/5, WINDOWHEIGHT / 2), (x*(WINDOWWIDTH-20)/5, 0), 1)
     resultsurf = SCOREFONT.render('EEG Trace: Channel ' + str(channel), True, WHITE)
     result_rect = resultsurf.get_rect()
@@ -67,7 +67,18 @@ def FeatureDisplay(DISPLAYSURF, channel): #Delineates the sections and labels th
 
 
 # Main function
-def main():
+def main(data_queue, fs, nperseg=None, noverlap=None):
+    """
+
+    :param data_queue: queue to read data from
+    :param fs: sampling rate
+    :param nperseg: If none, defaults to fs / 2
+    :param noverlap: If none, defaults to int(fs * 0.75)
+    :return:
+    """
+    nperseg = int(fs / 2)
+    noverlap = int(fs * 0.4)
+
     pygame.init()
     ##Font information
     global BASICFONT, BASICFONTSIZE
@@ -101,7 +112,9 @@ def main():
 
     #Used for Dummy Data
     dummyindex = time.time() + .1
-    Values = np.random.rand(3, 500)*50
+
+    values = get_data_packet(data_queue=data_queue)
+
     channel = 0
     SizeMultiplier = 1
     SpecMultiplier = 1
@@ -138,24 +151,22 @@ def main():
                     SpecMultiplier *= 0.75
 
         if time.time() > dummyindex:
-            dummyindex = dummyindex+.1
-            Values = np.concatenate((Values, np.random.rand(3, 500)*50), 1)  # Randomly generated values.
-            if len(Values[0, :]) > 25000:
-                Values = Values[:, -25000:]
-
-
-
+            dummyindex += .1
+            new_values = get_data_packet(data_queue=data_queue)
+            values = np.concatenate((values, new_values), axis=1)  # Randomly generated values.
+            if len(values[0, :]) > fs * 5:
+                values = values[:, -fs * 5:]
         #needed to exit the program gracefully
-        if quittingtime == True:
+        if quittingtime:
             break
 
-        DISPLAYSURF.fill((0, 0, 0))     #Clean the slate
+        DISPLAYSURF.fill((0, 0, 0))     # Clean the slate
 
 
         #This portion handles the EEG trace generation
         timeseriesindex = 0             # This is each individual x value in the series.
         numpairs = []                   #this will contain the xy pairs for the EEG positions
-        BaselinedValues = Values - np.mean(Values)  #subtracting the mean prevents drift from shifting things too far
+        BaselinedValues = values - np.mean(values)  #subtracting the mean prevents drift from shifting things too far
         for x in BaselinedValues[channel,0::50]:
             timeseriesindex += 2        # The increment of the x axis. higher number means denser trace
             yposition = x*SizeMultiplier + WINDOWHEIGHT/4
@@ -166,8 +177,8 @@ def main():
         pygame.draw.lines(DISPLAYSURF, CYAN, False, numpairs, 1)    #this line connects the dots
 
         #This is for the Spectral visualizer.
-        if len(Values[0, :]) == 25000:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
-            freq, density = sig.welch(BaselinedValues[channel, :], fs=5000, nperseg=25000, noverlap=None, scaling='density')
+        if len(values[0, :]) == fs * 5:                              #25000 is just 5 seconds of data.  it doesn't calculate this beforehand
+            freq, density = sig.welch(BaselinedValues[channel, :], fs=fs, nperseg=nperseg, noverlap=noverlap, scaling='density')
             timeseriesindex = 0
             numpairs = []
             for x in freq[0:205:5]:
@@ -178,16 +189,18 @@ def main():
                 timeseriesindex += 1
             pygame.draw.lines(DISPLAYSURF, GREEN, False, numpairs, 2)
 
-
-
         # Draw outline of arena, comes last so it overlaps all
         FeatureDisplay(DISPLAYSURF, channel)
 
 
         pygame.display.update()
-        FPSCLOCK.tick(FPS)# Tells the game system that it is not untouched by the inexorable march of time
+        FPSCLOCK.tick(FPS)
         pygame.display.update()
 
-if __name__ == '__main__':
-    main()
+
+def get_data_packet(data_queue):
+    ''' Gets the data packet. returns data packet in shape (channel, sample) '''
+    data_packet = data_queue.get()  # taken in as shape (sample, channel)
+    return np.swapaxes(data_packet, axis1=0, axis2=1)
+
 

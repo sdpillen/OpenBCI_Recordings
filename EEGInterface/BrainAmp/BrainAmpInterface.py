@@ -208,10 +208,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                 # Handle the Data #
                 ###################
                 # Save the Data - We put data on the queue to be saved - format for queue (index, time, data)
-                # TODO: fix the data we saved (transposing is incorrect)
                 if self.data_save_queue is not None:
                     downsampled_matrix = self.downsample_all_channels(data=data, resolutions=resolutions)
-
                     save_string = self.convert_downsample_matrix_to_save_string(data_index=self.data_index,
                                                                                 data_recieve_time=data_recieve_time, downsampled_matrix=downsampled_matrix)
                     self.data_save_queue.put((None, None, save_string))

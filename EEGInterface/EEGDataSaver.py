@@ -3,10 +3,9 @@ This file is for saving EEG Data
 """
 
 import CCDLUtil.DataManagement.StringParser as StringParser
-import os
 import time
+import sys
 import Queue
-
 
 def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
     """
@@ -48,7 +47,6 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
         f.flush()
     while True:
         # get our components
-
         try:
             if timeout is None:
                 index, t, data = queue.get()
@@ -57,7 +55,8 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
         except Queue.Empty:
             print "Data is not being collected."
             time.sleep(2)
-            os._exit(1)
+            # quit system
+            sys.exit(1)
         index = '' if index is None else str(index) + ','
         t = '' if t is None else str(t) + ','
         if type(data) is list:
@@ -70,7 +69,6 @@ def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
                 raise TypeError("Invalid data type -- data must be either string or ")
         # add a newline if needed.  Commas are already accounted for
         data_str = str(index) + str(t) + StringParser.idempotent_append_newline(data)
-
         # Write our index and timestamp
         f.write(data_str)
         # Flush our buffer

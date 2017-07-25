@@ -16,8 +16,8 @@ class EEGSystemNames(object):
     """
     BRAIN_AMP = 'brain_amp'
     GUSB_AMP = 'g_usb_amp'
-    OpenBCI = 'open_bci'
     EMOTIV = 'emotiv'
+    OpenBCI = 'open_bci'
 
     NO_BCI = None  # For testing
 

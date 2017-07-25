@@ -29,6 +29,7 @@ import CCDLUtil.EEGInterface.EEGDataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterfaceParent
+import csv
 
 
 class Marker:
@@ -173,8 +174,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         """
         Start our recording
         """
-
         # ##### Main Loop #### #
+        print "start recording"
         while True:
             raw_data, msgsize, msgtype = self.get_raw_data()
             # Perform action dependent on the message type
@@ -183,8 +184,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
             elif msgtype == 4:
                 # Data message, extract data and markers
                 (block, points, marker_count, data, markers) = self.get_data(raw_data, channel_count)
-
-
+                # data is a list of length 3200
+                assert len(data) == 3200
                 # Get the time we collected the sample
                 data_recieve_time = time.time()
                 self.data_index += 1  # Increase our sample counter
@@ -207,6 +208,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                 # Handle the Data #
                 ###################
                 # Save the Data - We put data on the queue to be saved - format for queue (index, time, data)
+                # TODO: fix the data we saved (transposing is incorrect)
                 if self.data_save_queue is not None:
                     downsampled_matrix = self.downsample_all_channels(data=data, resolutions=resolutions)
 
@@ -271,11 +273,10 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         # Because we want to sample at 500 Hz, we need to take 10x as many samples, so for every packet,
         # we need to collect 10 data points out of the 100 (aka, we need to collect every 10th data point)
 
+        # 100 is the number of samples we get once
         indexes_needed = range(0, 100, 10)
         # Shape is (Samples, Channels)
-
-
-
+        # size is correct: 10 x 1
         channels = np.zeros((len(indexes_needed), len(self.channels_for_live)))
         for ii, ch in enumerate(self.channels_for_live):
             # Get the channel index
@@ -283,11 +284,10 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                 channel_index = channel_dict[ch]
             else:
                 channel_index = ch
-
-            # Get our resolution for this channel
+            # Get our resolution for this channel (0.5)
             resolution = resolutions[channel_index]
-
-            channel_data = [data[index + channel_index] * resolution for index in indexes_needed]
+            # TODO: doucment this change -- fixed the indexing of channel data
+            channel_data = [data[index * 32 + channel_index] * resolution for index in indexes_needed]
             channels[:, ii] = np.asarray(channel_data)
         # Put our numpy array of channels on the queue.  Channels shape -> [samples (10), channel]
         self.out_buffer_queue.put(channels)
@@ -304,12 +304,10 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         if len(data1s) > channel_count * 1000000 / sampling_interval:
             index = int(len(data1s) - channel_count * 1000000 / sampling_interval)
             data1s = data1s[index:]
-
             avg = 0
             # Do not forget to respect the resolution !!!
             for i in range(len(data1s)):
                 avg = avg + data1s[i] * data1s[i] * resolutions[i % channel_count] * resolutions[i % channel_count]
-
             avg /= len(data1s)
             print "Average power: " + str(avg)
             return []

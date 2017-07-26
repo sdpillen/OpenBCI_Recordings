@@ -30,23 +30,29 @@ class TCPServer(object):
         # bind
         self.socket.bind(self.addr)
         self.socket.listen(3)
-        # keep a dictionary whose keys are tuple of (conn, client_addr) and values are tuple of (receive_queue, send_queue)
+        # keep a dictionary whose keys are client_addr and values are list of two queues: receive_queue, send_queue
         self.clients = dict()
 
 
     def accept_clients(self):
+        # should be called in a new thread!
         while True:
             conn, client_addr = self.socket.accept()
-            # create a new entry in the client dictionary
-            self.clients[(conn, client_addr)] = (Queue.Queue(), Queue.Queue())
+            # create a new entry in the client dictionary, first check if the key already exists or not
+            if client_addr in self.clients:
+                print "Error: same client is trying to connect again!"
+                sys.exit(0)
+            self.clients[(conn, client_addr)] = []
+            print "Client from: %s is now connected with server!" % str(client_addr)
 
 
     def handle_client(self):
-
+        # TODO: finish handling client
+        return 0
         # accept the connection
-        self.conn, self.client_addr = self.socket.accept()
-        self.receive_message_queue = receive_message_queue
-        self.send_message_queue = send_message_queue
+        # self.conn, self.client_addr = self.socket.accept()
+        # self.receive_message_queue = receive_message_queue
+        # self.send_message_queue = send_message_queue
 
     def start_receive_from_queue(self):
         """Receive messages from clients and pass them to the receive_message_queue. Close the socket if the message

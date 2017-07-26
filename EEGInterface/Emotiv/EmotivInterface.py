@@ -14,26 +14,32 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
         super(EmotivStreamer, self).__init__(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, put_data_on_out_queue_flag=put_data_on_out_queue_flag,
                                               subject_name=subject_name, subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
         sys.path.append(Constants.LIB_PATH)
-        # load Emotiv library for streamer
+        # set EDK library path
         self.lib_path = lib_path
-        print self.lib_path
         self.libEDK = ct.cdll.LoadLibrary(self.lib_path)
+        # set EEG file save path
         self.eeg_file_path = eeg_file_path
 
     def setup_var(self):
+        """
+        Set up variables needed for the experiment
+        :return: see usage in start_recording_and_saving_data
+        """
         return self.libEDK.EE_EmoEngineEventCreate(), self.libEDK.EE_EmoStateCreate(), ct.c_uint(0), ct.c_uint(0), ct.c_uint(0), ct.c_uint(1726), ct.c_float(1), ct.c_int(0)
 
 
     def start_recording(self):
+        """
+        Start recording brain signal from Emotiv headset
+        """
         self.start_recording_and_saving_data(self.eeg_file_path)
 
 
     def start_recording_and_saving_data(self, eeg_file_path):
-        '''
-        Start saving the recorded 
-        :param eeg_file_path: 
-        :return: 
-        '''
+        """
+        Build up connection with Emotiv headset and start recording data
+        :param eeg_file_path: the path to save eeg file
+        """
         # set up variables
         e_event, e_state, user_id, n_samples, n_sam, composer_port, secs, state = self.setup_var()
         # pointers
@@ -86,9 +92,15 @@ class EmotivStreamer(EEGParent.EEGInterfaceParent):
             time.sleep(0.2)
         # not sure the use of this in the original program...
         libEDK.EE_DataFree(h_data)
+        self.stop_connection(e_event=e_event, e_state=e_state)
 
 
     def stop_connection(self, e_event, e_state):
+        """
+        Stop the connection with Emotiv headset
+        :param e_event: e_event
+        :param e_state: e_state
+        """
         self.libEDK.EE_EngineDisconnect()
         self.libEDK.EE_EmoStateFree(e_state)
         self.libEDK.EE_EmoEngineEventFree(e_event)

@@ -11,7 +11,7 @@ from thread import start_new_thread
 
 class TCPServer(object):
 
-    def __init__(self, port, receive_message_queue, send_message_queue, buf=1024):
+    def __init__(self, port, buf=1024):
         """Initialize a TCP Server object and wait for clients to connect
         :param port: port number
         :param receive_message_queue: the queue to receive messages from (client)
@@ -25,7 +25,7 @@ class TCPServer(object):
         try:
             self.socket= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error:
-            print "Could not create socket."
+            print "Error: could not create socket!"
             sys.exit(0)
         # bind
         self.socket.bind(self.addr)
@@ -54,11 +54,7 @@ class TCPServer(object):
         # self.receive_message_queue = receive_message_queue
         # self.send_message_queue = send_message_queue
 
-    def start_receive_from_queue(self):
-        """Receive messages from clients and pass them to the receive_message_queue. Close the socket if the message
-        received is 'exit'
-        :return: none
-        """
+    def start_receive_from_queue(self, client_addr):
         while True:
             message = str(self.conn.recv(self.buf))
             self.receive_message_queue.put(message)
@@ -66,10 +62,7 @@ class TCPServer(object):
             if message == "exit":
                 self.socket.close()
 
-    def start_send_to_queue(self):
-        """Send messages to clients and pass them to the send_message_queue.
-        :return: none
-        """
+    def start_send_to_queue(self, client_addr):
         while True:
             message_to_send = self.send_message_queue.get()
             print "Sending... ", message_to_send

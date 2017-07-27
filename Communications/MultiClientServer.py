@@ -1,5 +1,9 @@
 """
-This class represents a TCP server which can send and receive messages from a TCP Client
+This class represents a TCP server which can take multiple clients. TCPServer saves an additional dictionary to record
+all the connected clients. The keys are the ip address of the client, and the values are tuples of (connection, receive
+_message_queue, send_message_queue)
+
+Be sure to run accept_clients method after construction (preferably in a newly created thread)
 
 If connection is unsuccessful, be sure to check the firewall settings (especially if Mcafee is installed, check if
 public network connection is disabled)
@@ -11,10 +15,9 @@ import sys
 class TCPServer(object):
 
     def __init__(self, port, buf=1024):
-        """Initialize a TCP Server object and wait for clients to connect
+        """
+        Initialize a TCP Server object and the client dictionary
         :param port: port number
-        :param receive_message_queue: the queue to receive messages from (client)
-        :param send_message_queue: the queue to send messages to (client)
         :param buf: the buffer size to send/receive messages (default to 1024 bytes)
         """
         self.port = port
@@ -22,7 +25,7 @@ class TCPServer(object):
         self.addr = ('', self.port)
         # TCP socket
         try:
-            self.socket= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error:
             print "Error: could not create socket!"
             sys.exit(0)
@@ -33,7 +36,12 @@ class TCPServer(object):
         self.clients = dict()
 
     def accept_clients(self, receive_message_queue, send_message_queue):
-        # should be called in a new thread!
+        """
+        Start listening and accepting new clients.
+        :param receive_message_queue: the receive_queue
+        :param send_message_queue:
+        :return:
+        """
         while True:
             conn, client_addr = self.socket.accept()
             # create a new entry in the client dictionary, first check if the key already exists or not

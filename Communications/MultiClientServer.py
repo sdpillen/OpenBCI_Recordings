@@ -6,8 +6,7 @@ public network connection is disabled)
 """
 import socket
 import sys
-import Queue
-from thread import start_new_thread
+
 
 class TCPServer(object):
 
@@ -30,11 +29,10 @@ class TCPServer(object):
         # bind
         self.socket.bind(self.addr)
         self.socket.listen(3)
-        # keep a dictionary whose keys are client_addr and values are list of two queues: receive_queue, send_queue
+        # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
 
-
-    def accept_clients(self):
+    def accept_clients(self, receive_message_queue, send_message_queue):
         # should be called in a new thread!
         while True:
             conn, client_addr = self.socket.accept()
@@ -42,28 +40,22 @@ class TCPServer(object):
             if client_addr in self.clients:
                 print "Error: same client is trying to connect again!"
                 sys.exit(0)
-            self.clients[(conn, client_addr)] = []
             print "Client from: %s is now connected with server!" % str(client_addr)
-
-
-    def handle_client(self):
-        # TODO: finish handling client
-        return 0
-        # accept the connection
-        # self.conn, self.client_addr = self.socket.accept()
-        # self.receive_message_queue = receive_message_queue
-        # self.send_message_queue = send_message_queue
+            self.clients[client_addr] = (conn, receive_message_queue, send_message_queue)
+            assert len(self.clients[client_addr]) == 3
 
     def start_receive_from_queue(self, client_addr):
         while True:
-            message = str(self.conn.recv(self.buf))
-            self.receive_message_queue.put(message)
+            conn = self.clients[client_addr][0]
+            message = str(conn.recv(self.buf))
+            self.clients[client_addr][1].put(message)
             print "received message: " + message
             if message == "exit":
                 self.socket.close()
 
     def start_send_to_queue(self, client_addr):
         while True:
-            message_to_send = self.send_message_queue.get()
+            conn = self.clients[client_addr][0]
+            message_to_send = self.clients[client_addr][1].get()
             print "Sending... ", message_to_send
-            self.conn.sendall(message_to_send)
+            conn.sendall(message_to_send)

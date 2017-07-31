@@ -1,3 +1,4 @@
+# TODO: when free, integrate this file into CCDLUtil.Constants
 
 class EEGSystemNames(object):
     """

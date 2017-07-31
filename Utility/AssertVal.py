@@ -42,8 +42,7 @@ def assert_greater_or_equal(val_greater, val_less):
     """
     Runs assertion and displays values if assertion fails.
     """
-    assert val_greater >= val_less, 'Error: %s should be GREATER THAN OR EQUAL TO %s' % (str(val_greater),
-                                                                                         str(val_less))
+    assert val_greater >= val_less, 'Error: %s should be GREATER THAN OR EQUAL TO %s' % (str(val_greater), str(val_less))
 
 
 def assert_epoch_label_shape(epoched_values, labels, message="The number of epochs between the density and labels don't match"):

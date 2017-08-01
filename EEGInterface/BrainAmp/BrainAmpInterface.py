@@ -250,6 +250,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         # Shape is (Samples, Channels)
         channels = np.zeros((len(indexes_needed), len(resolutions)))
         for ii, resolution in enumerate(resolutions):
+            # TODO: check this: we probably need to fix this
             channel_data = [data[index + ii] * resolution for index in indexes_needed]
             channels[:, ii] = np.asarray(channel_data)
         return channels

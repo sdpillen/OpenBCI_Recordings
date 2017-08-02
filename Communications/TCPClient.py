@@ -11,23 +11,26 @@ import Queue
 
 class TCPClient(object):
 
-    def __init__(self, server_ip, port, buf=1024):
+    def __init__(self, server_ip, port, buf=1024, verbose=True):
         """Initialize a TCP Client object
         :param server_ip: the ip address of the server to connect to
         :param port: port number
-        :param receive_message_queue: the queue to receive messages from (server)
-        :param send_message_queue: the queue to sendn
         :param buf: the buffer size to send/receive messages (default to 1024 bytes)
+        :param verbose: flag for printing messages
         """
         self.buf = buf
         self.ip = server_ip
         self.port = port
+        self.verbose = verbose
         # try to connect to server
         self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TCPSock.connect((self.ip, self.port))
 
         self.send_message_queue = Queue.Queue()
         self.receive_message_queue = Queue.Queue()
+
+        self.start_receive()
+        self.start_send()
 
     def start_receive(self):
         """
@@ -57,7 +60,7 @@ class TCPClient(object):
         Receive message from server
         :return: message
         """
-        self.receive_message_queue.get()
+        return self.receive_message_queue.get()
 
     def __start_receive_from_queue__(self):
         """start receiving messages from server and pass them to the receive_message_queue
@@ -65,7 +68,7 @@ class TCPClient(object):
         """
         while True:
             received_message = self.TCPSock.recv(self.buf)
-            print "Server sends: " + received_message
+            if self.verbose: print "Server sends: " + received_message
             self.receive_message_queue.put(received_message)
 
     def __start_send_to_queue__(self):
@@ -74,5 +77,5 @@ class TCPClient(object):
         """
         while True:
             message_to_send = str(self.send_message_queue.get())
-            print "Sending", message_to_send
+            if self.verbose: print "Sending", message_to_send
             self.TCPSock.send(message_to_send)

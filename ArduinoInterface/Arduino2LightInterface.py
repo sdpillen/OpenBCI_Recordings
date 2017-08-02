@@ -10,7 +10,6 @@ loaded on the ardunio uno baord.
 
 import serial
 import time
-import CCDLUtil.Utility.AssertVal as CCDLAssert
 
 
 class Arduino2LightInterface(object):
@@ -27,7 +26,7 @@ class Arduino2LightInterface(object):
 
     CLOSE_PORT = 'close_port'
 
-    def __init__(self, com_port, default_on=False, serial_init_post_delay=2.0, default_on_delay=0.0):
+    def __init__(self, com_port, default_on=False):
         """
         Initializes the arduino board to the given comport.  If default_on, a message
         will be sent to the board that turns on both lights, else both lights start off.

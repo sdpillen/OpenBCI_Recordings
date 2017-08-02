@@ -6,11 +6,12 @@ public network connection is disabled)
 """
 from threading import Thread
 import socket
+import Queue
 
 
 class TCPClient(object):
 
-    def __init__(self, server_ip, port, receive_message_queue, send_message_queue, buf=1024):
+    def __init__(self, server_ip, port, buf=1024):
         """Initialize a TCP Client object
         :param server_ip: the ip address of the server to connect to
         :param port: port number
@@ -25,8 +26,8 @@ class TCPClient(object):
         self.TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TCPSock.connect((self.ip, self.port))
 
-        self.send_message_queue = send_message_queue
-        self.receive_message_queue = receive_message_queue
+        self.send_message_queue = Queue.Queue()
+        self.receive_message_queue = Queue.Queue()
 
     def start_receive(self):
         """
@@ -42,6 +43,21 @@ class TCPClient(object):
         """
         # create thread to send msg
         Thread(target=lambda: self.__start_send_to_queue__()).start()
+
+    def send_message(self, message):
+        """
+        Send message to server
+        :param message: message to send
+        :return: none
+        """
+        self.send_message_queue.put(message)
+
+    def receive_message(self):
+        """
+        Receive message from server
+        :return: message
+        """
+        self.receive_message_queue.get()
 
     def __start_receive_from_queue__(self):
         """start receiving messages from server and pass them to the receive_message_queue

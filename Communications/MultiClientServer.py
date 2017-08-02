@@ -46,7 +46,7 @@ class TCPServer(object):
         return self.clients[client_addr][1].get()
 
     def send_msg(self, client_addr, msg):
-        return self.clients[client_addr][2].put(msg)
+        self.clients[client_addr][2].put(msg)
 
     def start_accept_clients(self):
         Thread(target=lambda: self.__accept_clients__()).start()

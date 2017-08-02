@@ -10,7 +10,7 @@ public network connection is disabled)
 """
 import socket
 import sys
-
+import Queue
 
 class TCPServer(object):
 
@@ -32,14 +32,13 @@ class TCPServer(object):
         # bind
         self.socket.bind(self.addr)
         self.socket.listen(3)
+        print "Server established!"
         # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
 
-    def accept_clients(self, receive_message_queue, send_message_queue):
+    def accept_clients(self):
         """
         Start listening and accepting new clients.
-        :param receive_message_queue: the receive_queue
-        :param send_message_queue:
         :return:
         """
         while True:
@@ -49,13 +48,15 @@ class TCPServer(object):
                 print "Error: same client is trying to connect again!"
                 sys.exit(0)
             print "Client from: %s is now connected with server!" % str(client_addr)
-            self.clients[client_addr] = (conn, receive_message_queue, send_message_queue)
+            # when one client connects, create the receive queue from this client, and the send queue to this client
+            self.clients[client_addr] = (conn, Queue.Queue(), Queue.Queue())
             assert len(self.clients[client_addr]) == 3
 
     def start_receive_from_queue(self, client_addr):
         while True:
             conn = self.clients[client_addr][0]
             message = str(conn.recv(self.buf))
+            # receive queue
             self.clients[client_addr][1].put(message)
             print "received message: " + message
             if message == "exit":

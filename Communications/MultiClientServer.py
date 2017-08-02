@@ -11,6 +11,8 @@ public network connection is disabled)
 import socket
 import sys
 import Queue
+from threading import Thread
+
 
 class TCPServer(object):
 
@@ -35,15 +37,53 @@ class TCPServer(object):
         print "Server established!"
         # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
+        # start accepting
+        self.start_accept_clients()
+        self.start_receive()
+        self.start_send()
 
-    def accept_clients(self):
+    def receive_msg(self, client_addr):
+        return self.clients[client_addr][1].get()
+
+    def send_msg(self, client_addr, msg):
+        return self.clients[client_addr][2].put(msg)
+
+    def start_accept_clients(self):
+        Thread(target=lambda: self.__accept_clients__()).start()
+
+    def start_receive(self):
+        Thread(target=lambda: self.__start_receive_from_queue__()).start()
+
+    def start_send(self):
+        Thread(target=lambda: self.__start_send_to_queue__()).start()
+
+    def __start_receive_from_queue__(self):
+        while True:
+            for client in self.clients:
+                conn = self.clients[client][0]
+                message = str(conn.recv(self.buf))
+                # receive queue
+                self.clients[client][1].put(message)
+                print "received message: " + message
+                if message == "exit":
+                    self.socket.close()
+
+    def __start_send_to_queue__(self):
+        while True:
+            for client in self.clients:
+                conn = self.clients[client][0]
+                message_to_send = self.clients[client][1].get()
+                print "Sending... ", message_to_send
+                conn.sendall(message_to_send)
+
+    def __accept_clients__(self):
         """
         Start listening and accepting new clients.
-        :return:
+        :return: none
         """
         while True:
             conn, client_addr = self.socket.accept()
-            # create a new entry in the client dictionary, first check if the key already exists or not
+            # create a new entry in the client dictonary, first check if the key already exists or not
             if client_addr in self.clients:
                 print "Error: same client is trying to connect again!"
                 sys.exit(0)
@@ -51,20 +91,3 @@ class TCPServer(object):
             # when one client connects, create the receive queue from this client, and the send queue to this client
             self.clients[client_addr] = (conn, Queue.Queue(), Queue.Queue())
             assert len(self.clients[client_addr]) == 3
-
-    def start_receive_from_queue(self, client_addr):
-        while True:
-            conn = self.clients[client_addr][0]
-            message = str(conn.recv(self.buf))
-            # receive queue
-            self.clients[client_addr][1].put(message)
-            print "received message: " + message
-            if message == "exit":
-                self.socket.close()
-
-    def start_send_to_queue(self, client_addr):
-        while True:
-            conn = self.clients[client_addr][0]
-            message_to_send = self.clients[client_addr][1].get()
-            print "Sending... ", message_to_send
-            conn.sendall(message_to_send)

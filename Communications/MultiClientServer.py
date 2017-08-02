@@ -54,10 +54,10 @@ class TCPServer(object):
         Thread(target=lambda: self.__accept_clients__()).start()
 
     def __start_receive__(self, client):
-        Thread(target=lambda: self.__start_receive_from_queue__(), args=(client,)).start()
+        Thread(target=self.__start_receive_from_queue__, args=(client,)).start()
 
     def __start_send__(self, client):
-        Thread(target=lambda: self.__start_send_to_queue__(), args=(client,)).start()
+        Thread(target=self.__start_send_to_queue__, args=(client,)).start()
 
     def __start_receive_from_queue__(self, client):
         while True:
@@ -85,7 +85,7 @@ class TCPServer(object):
         """
         while True:
             conn, client_addr = self.socket.accept()
-            if (type(client_addr) is tuple):
+            if type(client_addr) is tuple:
                 client_addr = client_addr[0]
             # create a new entry in the client dictonary, first check if the key already exists or not
             if client_addr in self.clients:

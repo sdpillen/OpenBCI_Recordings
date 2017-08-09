@@ -1,5 +1,5 @@
 """
-This file contains handles for use in various contexts
+This file contains decorators for use in various contexts
 """
 
 import threading

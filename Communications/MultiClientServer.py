@@ -11,7 +11,7 @@ public network connection is disabled)
 import socket
 import sys
 import Queue
-from threading import Thread
+from Utility.Decorators import threaded # for running method in new thread
 
 
 class TCPServer(object):
@@ -39,7 +39,7 @@ class TCPServer(object):
         # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
         # start accepting
-        self.__start_accept_clients__()
+        self.__accept_clients__()
 
     def receive_msg(self, client):
         return self.clients[client][1].get()
@@ -50,15 +50,7 @@ class TCPServer(object):
     def num_conns(self):
         return len(self.clients.keys())
 
-    def __start_accept_clients__(self):
-        Thread(target=lambda: self.__accept_clients__()).start()
-
-    def __start_receive__(self, client):
-        Thread(target=self.__start_receive_from_queue__, args=(client,)).start()
-
-    def __start_send__(self, client):
-        Thread(target=self.__start_send_to_queue__, args=(client,)).start()
-
+    @threaded
     def __start_receive_from_queue__(self, client):
         while True:
             conn = self.clients[client][0]
@@ -70,6 +62,7 @@ class TCPServer(object):
             if message == "exit":
                 self.socket.close()
 
+    @threaded
     def __start_send_to_queue__(self, client):
         while True:
             conn = self.clients[client][0]
@@ -78,6 +71,7 @@ class TCPServer(object):
                 print "Sending... ", message_to_send
             conn.sendall(message_to_send)
 
+    @threaded
     def __accept_clients__(self):
         """
         Start listening and accepting new clients.
@@ -96,5 +90,5 @@ class TCPServer(object):
             self.clients[client_addr] = (conn, Queue.Queue(), Queue.Queue())
             assert len(self.clients[client_addr]) == 3
             # create threads for send/receive of this client
-            self.__start_receive__(client_addr)
-            self.__start_send__(client_addr)
+            self.__start_receive_from_queue__(client_addr)
+            self.__start_send_to_queue__(client_addr)

@@ -4,7 +4,7 @@ This class represents a TCP Client which can receive and send messages to a TCP 
 If connection is unsuccessful, be sure to check the firewall settings (especially if Mcafee is installed, check if
 public network connection is disabled)
 """
-from threading import Thread
+from Utility.Decorators import threaded  # for running method in new thread
 import socket
 import Queue
 
@@ -29,23 +29,8 @@ class TCPClient(object):
         self.send_message_queue = Queue.Queue()
         self.receive_message_queue = Queue.Queue()
 
-        self.start_receive()
-        self.start_send()
-
-    def start_receive(self):
-        """
-        Create thread to receive messages from the server
-        :return: none
-        """
-        Thread(target=lambda: self.__start_receive_from_queue__()).start()
-
-    def start_send(self):
-        """
-        Create thread to send messages to the server
-        :return: none
-        """
-        # create thread to send msg
-        Thread(target=lambda: self.__start_send_to_queue__()).start()
+        self.__start_receive_from_queue__()
+        self.__start_send_to_queue__()
 
     def send_message(self, message):
         """
@@ -62,6 +47,7 @@ class TCPClient(object):
         """
         return self.receive_message_queue.get()
 
+    @threaded
     def __start_receive_from_queue__(self):
         """start receiving messages from server and pass them to the receive_message_queue
         :return: none
@@ -71,6 +57,7 @@ class TCPClient(object):
             if self.verbose: print "Server sends: " + received_message
             self.receive_message_queue.put(received_message)
 
+    @threaded
     def __start_send_to_queue__(self):
         """start sending messages to server and pass them to the send_message_queue. Send 'exit' to close the socket
         :return: none

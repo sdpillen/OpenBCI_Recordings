@@ -29,7 +29,7 @@ from Utility.Decorators import threaded
 def put_call_to_queue(fn):
     """
     Used to put user calls of updating graphics to the queue
-    :param q: the queue to put user calls
+    :param fn: the function call to put into queue
     :return: none
     """
     def wrapper(*args, **kwargs):
@@ -98,8 +98,9 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
                                    of the screen width.  Second dimension cannot be none. Defaults to (None, 100)
         """
         super(CursorTask, self).__init__()
-        self.screen_width, self.screen_height = screen_size_width, screen_size_height
 
+        self.event_queue = Queue.Queue()
+        self.screen_width, self.screen_height = screen_size_width, screen_size_height
         self.text_dictionary_list = [] if text_dictionary_list is None else text_dictionary_list
 
         # Fix our targets (removing all None attributes and replacing with screen height/width.
@@ -152,17 +153,6 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.draw_bottom_flag = False
         self.draw_cursor_flag = False
 
-        self.key_actions = {'ESCAPE': self.quit,
-                            'UP': lambda: self.move_cursor_delta_y(-10),
-                            'DOWN': lambda: self.move_cursor_delta_y(10),
-                            'LEFT': lambda: self.move_cursor_delta_x(-10),
-                            'RIGHT': lambda: self.move_cursor_delta_x(10),
-                            'a': lambda: self.collide_left(),
-                            'd': lambda: self.collide_right(),
-                            's': lambda: self.collide_bottom(),
-                            'w': lambda: self.collide_top(),
-                            }
-
         # Default of object is to draw the crosshair first.
         self.draw_crosshair_flag = False
         self.draw_cursor_flag = show_cursor
@@ -175,38 +165,10 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.font = pygame.font.SysFont(font_type, font_size)
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
-        # ------- Queue for Run_With_Queue ------- #
-        self.event_queue = Queue.Queue()
+        self.__run_with_queue__()
 
-    # TODO: Thread this!!!!
-    def run_with_keys(self):
-        """
-        Runs the game with the keyboard.
-
-        Runs infinitely.
-        """
-        timer = pygame.time.Clock()
-        while True:
-            for event in pygame.event.get():
-                # If we get a notification from pygame to quit, do so.
-                if event.type == pygame.QUIT:
-                    self.quit()
-                # If we get a key down event, handle that event
-                if event.type == pygame.KEYDOWN:
-                    # Iterate through our key_actions keys.  This is all possible commands we have defined.
-                    for action_key in self.key_actions:
-                        # Check to see if we have a match to our event
-                        if event.key == eval("pygame.K_" + action_key):
-                            # We found a match.  Run the command and break out of this loop.
-                            self.key_actions[action_key]()
-                            break
-            # Draw our screen
-            self.draw_shapes()
-            pygame.display.update()
-            timer.tick(self.tick_time)
-
-    # TODO: Thread this!!!!
-    def run_with_queue(self, q):
+    @threaded
+    def __run_with_queue__(self):
         """
         Runs our game by reading off events off the passed queue. Events should be passed in the form:
             (event, args).
@@ -218,20 +180,14 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         while True:
             CursorTask.__clear_events__()
             try:
-                key, args = q.get(False)
-                if args is None:
-                    self.q_action_dictionary[key]()
-                elif key == self.SET_TEXT_DICTIONARY_LIST:
-                    self.q_action_dictionary[key](args)
-                elif type(args) is not tuple:
-                    self.q_action_dictionary[key](args)
-                else:
-                    self.q_action_dictionary[key](*args)
+                print "hello"
+                x = self.event_queue.get()
+                print type(x)
             except Queue.Empty:
                 pass
             CursorTask.__clear_events__()
             timer.tick(self.tick_time)
-            self.draw_shapes()
+            self.__draw_shapes__()
             pygame.display.update()
 
     # ----------Following are graphic methods that users call---------- #
@@ -509,59 +465,6 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.set_cursor_x_coord(int(self.screen_width) // 2)
         self.set_cursor_y_coord(int(self.screen_height) // 2)
 
-    @put_call_to_queue
-    def draw_shapes(self):
-        """
-        Draws our boards according to how the flags of this class are set.
-
-        This method should not be called externally.
-
-        """
-
-        # Fill the screen with our current background
-        self.screen.fill(self.background_color[self.background_color_key])
-
-        if self.draw_crosshair_flag:
-            height_half = self.crosshair_height // 2
-            width_half = self.crosshair_width // 2
-            screenheight_half = self.screen_height // 2
-            screenwidth_half = self.screen_width // 2
-            pygame.draw.rect(self.screen, self.crosshair_cross_color,
-                             pygame.Rect((screenwidth_half - width_half, screenheight_half),
-                                         (self.crosshair_width, self.crosshair_thickness)))
-            pygame.draw.rect(self.screen, self.crosshair_cross_color,
-                             pygame.Rect((screenwidth_half, screenheight_half - height_half),
-                                         (self.crosshair_thickness, self.crosshair_height)))
-
-        CursorTask.__clear_events__()
-
-        if self.draw_left_flag:
-            # Are we drawing the left flag?
-            pygame.draw.rect(self.screen, self.left_color,
-                             pygame.Rect((self.left_bar_x, self.top_y), self.target_size_left))
-        if self.draw_right_flag:
-            # Are we drawing the right flag?
-            pygame.draw.rect(self.screen, self.right_color,
-                             pygame.Rect((self.right_bar_x, self.top_y), self.target_size_right))
-
-        if self.draw_top_flag:
-            # Are we drawing the left flag?
-            pygame.draw.rect(self.screen, self.top_color,
-                             pygame.Rect((self.left_bar_x, self.top_y), self.target_size_top))
-        if self.draw_bottom_flag:
-            # Are we drawing the bottom flag?
-            pygame.draw.rect(self.screen, self.bottom_color,
-                             pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_bottom))
-
-        if self.draw_cursor_flag:
-            # Are we showing the cursor?
-            pygame.draw.circle(self.screen,
-                               (255, 255, 255),
-                               [self.cursor_x, self.cursor_y],
-                               self.cursor_radius)
-
-        self.draw_text()
-        CursorTask.__clear_events__()
 
     @put_call_to_queue
     def show_only_crosshairs_with_ch_background(self):
@@ -643,6 +546,59 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.screen.blit(answer_txt, (no_text_location_x, self.screen_height // 2))
 
     # ----------private methods---------- #
+    def __draw_shapes__(self):
+        """
+        Draws our boards according to how the flags of this class are set.
+
+        This method should not be called externally.
+
+        """
+
+        # Fill the screen with our current background
+        self.screen.fill(self.background_color[self.background_color_key])
+
+        if self.draw_crosshair_flag:
+            height_half = self.crosshair_height // 2
+            width_half = self.crosshair_width // 2
+            screenheight_half = self.screen_height // 2
+            screenwidth_half = self.screen_width // 2
+            pygame.draw.rect(self.screen, self.crosshair_cross_color,
+                             pygame.Rect((screenwidth_half - width_half, screenheight_half),
+                                         (self.crosshair_width, self.crosshair_thickness)))
+            pygame.draw.rect(self.screen, self.crosshair_cross_color,
+                             pygame.Rect((screenwidth_half, screenheight_half - height_half),
+                                         (self.crosshair_thickness, self.crosshair_height)))
+
+        CursorTask.__clear_events__()
+
+        if self.draw_left_flag:
+            # Are we drawing the left flag?
+            pygame.draw.rect(self.screen, self.left_color,
+                             pygame.Rect((self.left_bar_x, self.top_y), self.target_size_left))
+        if self.draw_right_flag:
+            # Are we drawing the right flag?
+            pygame.draw.rect(self.screen, self.right_color,
+                             pygame.Rect((self.right_bar_x, self.top_y), self.target_size_right))
+
+        if self.draw_top_flag:
+            # Are we drawing the left flag?
+            pygame.draw.rect(self.screen, self.top_color,
+                             pygame.Rect((self.left_bar_x, self.top_y), self.target_size_top))
+        if self.draw_bottom_flag:
+            # Are we drawing the bottom flag?
+            pygame.draw.rect(self.screen, self.bottom_color,
+                             pygame.Rect((self.right_bar_x, self.bot_y), self.target_size_bottom))
+
+        if self.draw_cursor_flag:
+            # Are we showing the cursor?
+            pygame.draw.circle(self.screen,
+                               (255, 255, 255),
+                               [self.cursor_x, self.cursor_y],
+                               self.cursor_radius)
+
+        self.draw_text()
+        CursorTask.__clear_events__()
+
     @staticmethod
     def __clear_events__():
         """
@@ -687,4 +643,6 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
 if __name__ == '__main__':
-    CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}).run_with_keys()
+    ct = CursorTask(window_x_pos=100, window_y_pos=100, text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)})
+    ct.show_cursor(True)
+    ct.collide_right(color=(255, 0, 0))

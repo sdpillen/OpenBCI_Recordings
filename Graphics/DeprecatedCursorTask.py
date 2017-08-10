@@ -64,8 +64,9 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
 
     # -----------Deprecation Warning!!!---------- #
     warnings.simplefilter('always', DeprecationWarning)
-
-
+    warnings.warn('This CursorTask has been deprecated! Check out CursorTask.py under the same directory',
+                  DeprecationWarning)
+    # -----------Deprecation Warning!!!---------- #
 
     # Collision messages
     COLLIDE_TOP = 'collide_top'

@@ -16,27 +16,6 @@ To control the graphics, place items in the queue in the format (command, args).
         queue.put((CursorTask.COLLIDE_LEFT, None))  # This will call the collide left operation with No arguments.
         queue.put((CursorTask.SHOW_LEFT_FLAG, False))  # This will hide our left flag (aka target)
 
-#############################
-Running with Keys           #
-#############################
-This module can be run via the keyboard.  Use in the similar fashion as with the queue, but call the run_with_keys function instead.
-            'ESCAPE': quit,
-            'LEFT': move left 10 pixels,
-            'RIGHT': move right 10 pixels,
-            'A': collide left,
-            'D': collide right,
-            'W': collide Top,
-            'S': collide Bottom,
-
-#############################
-Crosshairs and blank screen #
-#############################
-To show the crosshair, call:
-    queue.put((CursorTask.SHOW_CROSSHAIR, None))
-
-To show a blank screen, call:
-    queue.put((CursorTask.SHOW_BLANK, None))
-
 """
 
 import pygame
@@ -303,7 +282,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
 
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
-
+    @put_call_to_queue
     def reset(self, color=None):
         """
         Resets the cursor to the center and returns the flags back to their neutral color (or color if passed value that is not None)
@@ -318,21 +297,25 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.top_color = color
         self.bottom_color = color
 
+    @put_call_to_queue
     def set_to_cursor_background_color(self):
         """
         Sets the background to the cursor background color
         """
         self.background_color_key = self.CURSOR_BKGRND
 
+    @put_call_to_queue
     def set_to_block_game_background(self):
         self.background_color_key = self.CURSOR_BKGRND
 
+    @put_call_to_queue
     def set_to_crosshair_background_color(self):
         """
         Sets the background to the cursor background color
         """
         self.background_color_key = self.CROSSHAIR_BKGRND
 
+    @put_call_to_queue
     def quit(self):
         """
         Quits pygame and exits (via sys.exit)
@@ -340,18 +323,21 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         pygame.quit()
         sys.exit(0)
 
+    @put_call_to_queue
     def set_cursor_x_coord(self, new_x_position):
         """
         Sets the x position of the cursor to new_x_position
         """
         self.cursor_x = new_x_position
 
+    @put_call_to_queue
     def set_cursor_y_coord(self, new_y_position):
         """
         Sets the y position of the cursor to new_y_position
         """
         self.cursor_y = new_y_position
 
+    @put_call_to_queue
     def move_cursor_delta_x(self, delta_x):
         """
         Moves the cursor by delta_x.  Positive for right, negative for left.
@@ -359,23 +345,15 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
 
         self.cursor_x += delta_x
 
+    @put_call_to_queue
     def move_cursor_delta_y(self, delta_y):
         """
         Moves the cursor by delta_y.  Positive for down, negative for up.
         """
         self.cursor_y += delta_y
 
+    @put_call_to_queue
     def collide_left(self, color=None):
-        self.event_queue.put(self.__collide_left__(color=color))
-
-    def collide_right(self, color=None):
-        self.event_queue.put(self.__collide_right__(color=color))
-
-    def collide_bottom(self, color=None):
-        self.event_queue.put(self.__collide_bottom__(color=color))
-
-    @put_call_to_queue(self.event_queue)
-    def __collide_left__(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default hit color.
 
@@ -386,7 +364,8 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.left_color = color
 
-    def __collide_right__(self, color=None):
+    @put_call_to_queue
+    def collide_right(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default hit color.
 
@@ -397,7 +376,8 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.right_color = color
 
-    def __collide_bottom__(self, color=None):
+    @put_call_to_queue
+    def collide_bottom(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default hit color.
 
@@ -408,7 +388,8 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.bottom_color = color
 
-    def __collide_top__(self, color=None):
+    @put_call_to_queue
+    def collide_top(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default hit color.
 
@@ -419,6 +400,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.top_color = color
 
+    @put_call_to_queue
     def uncollide_left(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default hit neurtral.
@@ -430,6 +412,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.left_color = color
 
+    @put_call_to_queue
     def uncollide_right(self, color=None):
         """
         Changes the color of the left flag to the passed color.  If none, uses the default neutral color.
@@ -441,6 +424,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.right_color = color
 
+    @put_call_to_queue
     def uncollide_top(self, color=None):
         """
         Changes the color of the top flag to the passed color.  If none, uses the default neutral color.
@@ -452,6 +436,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.top_color = color
 
+    @put_call_to_queue
     def uncollide_bottom(self, color=None):
         """
         Changes the color of the bottom flag to the passed color.  If none, uses the default neutral color.
@@ -463,6 +448,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         else:
             self.bottom_color = color
 
+    @put_call_to_queue
     def uncollide_all(self, color=None):
         """
         Changes the color of all flags to the passed color.  If None, uses the default neutral color.
@@ -472,6 +458,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.uncollide_top(color)
         self.uncollide_bottom(color)
 
+    # TODO: Thread this!!!!
     def run_with_keys(self):
         """
         Runs the game with the keyboard.
@@ -498,6 +485,8 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
             pygame.display.update()
             timer.tick(self.tick_time)
 
+    # TODO: Thread this!!!!
+
     def run_with_queue(self, q):
         """
         Runs our game by reading off events off the passed queue. Events should be passed in the form:
@@ -508,7 +497,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         """
         timer = pygame.time.Clock()
         while True:
-            self.clear_events()
+            self.__clear_events__()
             try:
                 key, args = q.get(False)
                 if args is None:
@@ -521,7 +510,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
                     self.q_action_dictionary[key](*args)
             except Queue.Empty:
                 pass
-            self.clear_events()
+            self.__clear_events__()
             timer.tick(self.tick_time)
             self.draw_shapes()
             pygame.display.update()
@@ -579,6 +568,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         """
         self.draw_bottom_flag = b
 
+    @put_call_to_queue
     def show_lr_flags(self, b):
         """
         If b, shows left and right flags.  Else hides left and right flags.
@@ -587,6 +577,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.show_left_flag(b)
         self.show_right_flag(b)
 
+    @put_call_to_queue
     def show_tb_flags(self, b):
         """
         If b, shows top and bottom flags.  Else hides top and bottom flags.
@@ -595,6 +586,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.show_top_flag(b)
         self.show_bottom_flag(b)
 
+    @put_call_to_queue
     def show_all_flags(self, b):
         """
         Shows all flags (top, bottom, left and right) if b, else hides them all
@@ -603,6 +595,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.show_lr_flags(b)
         self.show_tb_flags(b)
 
+    @put_call_to_queue
     def reset_cursor_to_center(self):
         """
         Reset cursor to the center of the screen.
@@ -610,13 +603,14 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.set_cursor_x_coord(int(self.screen_width) // 2)
         self.set_cursor_y_coord(int(self.screen_height) // 2)
 
-    def clear_events(self):
+    def __clear_events__(self):
         """
         Clear all events from our pygame event queue.  Needs to be called to prevent freezing
         (maybe due to a pygame bug? simply blocking all events doesn't prevent freezing)
         """
         pygame.event.clear()
 
+    @put_call_to_queue
     def draw_shapes(self):
         """
         Draws our boards according to how the flags of this class are set.
@@ -640,7 +634,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
                              pygame.Rect((screenwidth_half, screenheight_half - height_half),
                                          (self.crosshair_thickness, self.crosshair_height)))
 
-        self.clear_events()
+        self.__clear_events__()
 
         if self.draw_left_flag:
             # Are we drawing the left flag?
@@ -668,8 +662,9 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
                                self.cursor_radius)
 
         self.draw_text()
-        self.clear_events()
+        self.__clear_events__()
 
+    @put_call_to_queue
     def show_only_crosshairs_with_ch_background(self):
         """
         Shows only the crosshairs, chaning the background color to our background crosshair color
@@ -678,9 +673,9 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         self.set_to_crosshair_background_color()
         self.show_crosshair(True)
 
+    @put_call_to_queue
     def show_only_lrtb_flags_with_cursor_background(self, lrtb_lst, show_cursor=False):
         """
-        
         :param lrtb_lst: A list containing the elements {'l', 'r', 't', 'b'} that shows whether to show each cursor in the list
                 Sets background to the specified cursor background
         :param show_cursor: if True, we'll show the cursor as well, else we'll hide it.
@@ -700,6 +695,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         if show_cursor:
             self.show_cursor(True)
 
+    @put_call_to_queue
     def set_crosshairs_color_for_flash(self, color=(255, 255, 255)):
         """
         Sets the crosshair color to color.
@@ -707,7 +703,7 @@ class CursorTask(CCDLCrosshair.PyCrosshair):
         """
         self.crosshair_cross_color = color
 
-
+    @put_call_to_queue
     def draw_text(self):
         if type(self.text_dictionary_list) is list:
             for text_dict in self.text_dictionary_list:

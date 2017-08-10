@@ -48,11 +48,11 @@ class PyCrosshair(object):
     # Text Commands
     SET_TEXT_DICTIONARY_LIST = 'dictionary_text_list'
 
-
     def __init__(self, screen_size_width=1920, screen_size_height=1080,
-                 background_color=(128, 128, 128), window_x_pos=0, window_y_pos=0, cursor_radius=60, font_size=60, font_type="Verdana",
-                 rest_crosshair_cross_color=(255, 255, 255), flash_crosshair_cross_color=(255, 0, 0),
-                 show_mouse=False, tick_time=10, crosshair_height=60, crosshair_width=60, crosshair_thickness=8, text_dictionary_list=None):
+                 background_color=(128, 128, 128), window_x_pos=0, window_y_pos=0, cursor_radius=60, font_size=60,
+                 font_type="Verdana", rest_crosshair_cross_color=(255, 255, 255),
+                 flash_crosshair_cross_color=(255, 0, 0), show_mouse=False, tick_time=10, crosshair_height=60,
+                 crosshair_width=60, crosshair_thickness=8, text_dictionary_list=None):
         """
         Defaults to drawing the crosshair first.
 

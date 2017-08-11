@@ -43,7 +43,7 @@ import pygame
 import sys
 import os
 import Queue
-import CCDLUtil.Graphics.PyCrosshair as CCDLCrosshair
+import PyCrosshair as CCDLCrosshair
 import warnings
 
 class CursorTask(CCDLCrosshair.PyCrosshair):

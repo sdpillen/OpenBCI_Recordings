@@ -23,6 +23,7 @@ def run_leave_one_out_cv(features, labels, classifier=LinearDiscriminantAnalysis
     loo = LeaveOneOut()
     scores = []
     for train_indexes, test_indexes in loo.split(features, labels):
+
         # Assert our split maintains the same number of features
         CCDLAssert.assert_equal(len(train_indexes) + len(test_indexes), features.shape[0])
 
@@ -39,4 +40,5 @@ def run_leave_one_out_cv(features, labels, classifier=LinearDiscriminantAnalysis
 
         score = classifier.score(X_test, Y_test)
         scores.append(score)
+
     return scores

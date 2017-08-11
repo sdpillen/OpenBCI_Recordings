@@ -11,23 +11,12 @@ import pygame
 import sys
 import os
 import Queue
-import CCDLUtil.Graphics.PyCrosshair as CCDLCrosshair
+import PyCrosshair as Crosshair
 from Utility.Decorators import threaded
+from Graphics.Util.Decorator import put_call_to_queue
 
 
-def put_call_to_queue(fn):
-    """
-    Used to put user calls of updating graphics to the queue
-    :param fn: the function call to put into queue
-    :return: none
-    """
-    def wrapper(*args, **kwargs):
-        # args[0] == self
-        args[0].event_queue.put(fn(*args, **kwargs))
-    return wrapper
-
-
-class CursorTask(CCDLCrosshair.PyCrosshair):
+class CursorTask(Crosshair.PyCrosshair):
 
     """
     This class manages a cursor task graphics.  All logic is abstracted -- this is only for displaying items on screen

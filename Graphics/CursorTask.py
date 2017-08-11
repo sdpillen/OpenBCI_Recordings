@@ -3,8 +3,8 @@ This module is for displaying graphics for a cursor task. It has been re-designe
 multiple queue usage in client's code.
 
 Example:
-    ct = CursorTask()       # this will create new thread to take function calls off the queue
-    ct.<graphic method calls>       # client can simply (and logically) call the graphics updating method. That easy
+    ct = CursorTask() # this will create new thread to take function calls off the queue
+    ct.<graphic method calls> # client can simply (and logically) call the graphics updating method. It's that easy
 """
 
 import pygame

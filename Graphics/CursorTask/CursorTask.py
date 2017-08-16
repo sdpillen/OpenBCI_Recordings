@@ -357,11 +357,15 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_crosshair_flag = b
 
     @put_call_to_queue
-    def show_cursor(self, b):
+    def show_cursor(self):
         """
         Shows the cursor
         """
-        self.draw_cursor_flag = b
+        self.draw_cursor_flag = True
+
+    @put_call_to_queue
+    def hide_cursor(self):
+        self.draw_cursor_flag = False
 
     @put_call_to_queue
     def hide_all(self):

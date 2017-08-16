@@ -3,6 +3,8 @@ This files stores all related constants of BrainAmp device
 """
 
 '''About the Device'''
+# name
+NAME = 'brain_amp'
 # sampling rate
 FS = 500
 # channel list

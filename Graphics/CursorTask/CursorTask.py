@@ -485,10 +485,10 @@ class CursorTask(Crosshair.PyCrosshair):
         if type(self.text_dictionary_list) is list:
             for text_dict in self.text_dictionary_list:
                 color = text_dict['color']
-                x, y= text_dict['pos']
+                x, y = text_dict['pos']
                 text = text_dict['text']
                 if x is None or y is None:
-                    center_x, center_y = self.get_coords_for_message_center(text)
+                    center_x, center_y = self.__get_coords_for_message_center__(text)
                     x = center_x if x is None else x
                     y = center_y if y is None else y
                 answer_txt = self.font.render(text, False, color)
@@ -500,16 +500,16 @@ class CursorTask(Crosshair.PyCrosshair):
             x, y = text_dict['pos']
             text = text_dict['text']
             if x is None or y is None:
-                center_x, center_y = self.get_coords_for_message_center(text)
+                center_x, center_y = self.__get_coords_for_message_center__(text)
                 x = center_x if x is None else x
                 y = center_y if y is None else y
 
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
 
-        size_x, size_y = self.get_message_size('NO')
+        size_x, size_y = self.__get_message_size__('NO')
         no_text_location_x = self.screen_width - self.bar_thickness_x // 2 - size_x // 2
-        size_x, size_y = self.get_message_size('YES')
+        size_x, size_y = self.__get_message_size__('YES')
         yes_text_location_x = self.bar_thickness_x // 2 - size_x // 2
 
         answer_txt = self.font.render('YES', False, (0, 0, 0))
@@ -617,4 +617,4 @@ class CursorTask(Crosshair.PyCrosshair):
 
 if __name__ == '__main__':
     ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)})
-
+    ct.quit()

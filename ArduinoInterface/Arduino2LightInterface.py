@@ -4,10 +4,9 @@ This file is for communicating with the LED lights.
 Note that some methods may take on the order of seconds to run.
 
 The assumption is that this is run with the code in the SSVEP_2_LED/SSVEP_2_LED.ino script
-loaded on the ardunio uno baord.
+loaded on the arduino uno board.
 
 """
-
 import Queue
 import serial
 import time
@@ -74,9 +73,7 @@ class Arduino2LightInterface(object):
         """
         Runs infinitely, taking messages from a queue for what to write to the arduino board.
         If passes a close port message, it will close the port and cease running.
-        :param queue: queue to read messages from
         """
-
         while True:
             message = self.event_queue.get()
             if message == self.CLOSE_PORT:
@@ -94,7 +91,7 @@ class Arduino2LightInterface(object):
         No values are returned.
 
         :param msg: msg must be an str(int) between 0 and 6. For a message key use the fields of the current class
-        :param predelay: Delay to wait prior to sending the message, defaults to zero
+        :param pre_delay: Delay to wait prior to sending the message, defaults to zero
         :param post_delay: Delay to wait post sending the message, defaults to zero
         :param run_post_check: If True, will read a return message from the arduino confirming
                                 communication took place.  If it didn't, it will attempt to resend

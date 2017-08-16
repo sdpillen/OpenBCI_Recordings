@@ -12,8 +12,8 @@ import sys
 import os
 import Queue
 import PyCrosshair as Crosshair
-from Utility.Decorators import threaded
-from Graphics.Util.Decorator import put_call_to_queue
+from CCDLUtil.Utility.Decorators import threaded
+from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 
 class CursorTask(Crosshair.PyCrosshair):

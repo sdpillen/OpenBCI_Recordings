@@ -15,8 +15,8 @@ import pygame
 import sys
 import os
 import Queue
-from Utility.Decorators import threaded
-from Graphics.Util.Decorator import put_call_to_queue
+from CCDLUtil.Utility.Decorators import threaded
+from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 
 class PyCrosshair(object):

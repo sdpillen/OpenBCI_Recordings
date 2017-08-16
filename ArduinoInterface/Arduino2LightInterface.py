@@ -8,12 +8,15 @@ loaded on the ardunio uno baord.
 
 """
 
+import Queue
 import serial
 import time
+from Utility.Decorators import threaded
 
 
 class Arduino2LightInterface(object):
 
+    # -----Messages----- #
     NO_MSG = '0'
     BOTH_ON_MSG = '1'
     BOTH_OFF_MSG = '2'
@@ -21,12 +24,10 @@ class Arduino2LightInterface(object):
     LIGHT_4_ACTIVATE_MSG = '4'
     LIGHT_3_DEACTIVATE_MSG = '5'
     LIGHT_4_DEACTIVATE_MSG = '6'
-
     VALID_ARDUINO_MESSAGES = set(map(str, range(0, 7)))
-
     CLOSE_PORT = 'close_port'
 
-    def __init__(self, com_port, default_on=False):
+    def __init__(self, com_port, default_on=False, read_from_queue=True):
         """
         Initializes the arduino board to the given comport.  If default_on, a message
         will be sent to the board that turns on both lights, else both lights start off.
@@ -36,20 +37,55 @@ class Arduino2LightInterface(object):
         :param com_port: The port to connect to
         :param default_on: Will turn on lights if true and take an additional default_on_delay seconds
                             to set up.
-        :param serial_init_post_delay: Time to wait after creating the serial port, defaults to 2
-        :param default_on_delay: Time to wait after sending the initial command to turn on the lights
-                                    defaults to 0.0.  Only relevant if default_on is True.
+        :param read_from_queue: True to start a new thread to control lights from queue
         """
 
+        self.event_queue = Queue.Queue()
         if type(com_port) is int:
             com_port = 'COM%d' % com_port
         self.ser = serial.Serial(com_port, 9600)
         time.sleep(2.0)
         if default_on:
-            self.write(self.LIGHT_3_DEACTIVATE_MSG)
+            self.__write__(self.LIGHT_3_DEACTIVATE_MSG)
             time.sleep(2.0)
+        if read_from_queue:
+            self.__read_from_queue__()
 
-    def write(self, msg, predelay=0.0, post_delay=0.0, run_post_check=False):
+    def turn_both_on(self):
+        self.event_queue.put(self.BOTH_ON_MSG)
+
+    def turn_both_off(self):
+        self.event_queue.put(self.BOTH_OFF_MSG)
+
+    def turn_left_on(self):
+        self.event_queue.put(self.LIGHT_3_ACTIVATE_MSG)
+
+    def turn_left_off(self):
+        self.event_queue.put(self.LIGHT_3_DEACTIVATE_MSG)
+
+    def turn_right_on(self):
+        self.event_queue.put(self.LIGHT_4_ACTIVATE_MSG)
+
+    def turn_right_off(self):
+        self.event_queue.put(self.LIGHT_4_DEACTIVATE_MSG)
+
+    @threaded
+    def __read_from_queue__(self):
+        """
+        Runs infinitely, taking messages from a queue for what to write to the arduino board.
+        If passes a close port message, it will close the port and cease running.
+        :param queue: queue to read messages from
+        """
+
+        while True:
+            message = self.event_queue.get()
+            if message == self.CLOSE_PORT:
+                self.close_port()
+                return
+            else:
+                self.__write__(msg=message)
+
+    def __write__(self, msg, pre_delay=0.0, post_delay=0.0, run_post_check=False):
         """
         Sends a message to the board.  This method takes time post_delay to run.
         If messages are sent too quickly, they may not be properly communicated to the board.
@@ -73,34 +109,20 @@ class Arduino2LightInterface(object):
             time.sleep(delay2)
             return_msg = self.ser.read(self.ser.inWaiting())  # read all characters in buffer
             return return_msg
+
         if msg not in self.VALID_ARDUINO_MESSAGES:
             raise ValueError('The message must be valid')
         msg = bytearray(msg, 'ascii')
 
-        ret_msg = send_msg(to_send=msg, delay1=predelay, delay2=post_delay)
+        ret_msg = send_msg(to_send=msg, delay1=pre_delay, delay2=post_delay)
         if run_post_check and ret_msg != msg:
-            print msg, " - Arduino message not delivered with delays ", predelay, post_delay,
+            print msg, " - Arduino message not delivered with delays ", pre_delay, post_delay,
             print "Retrying..."
             ret_msg = send_msg(to_send=msg, delay1=2, delay2=2)
             if ret_msg == msg:
                 print "Arduino Message delivered"
             else:
                 raise RuntimeError('Arduino communication disrupted.')
-
-    def read_from_queue(self, queue):
-        """
-        Runs infinitely, taking messages from a queue for what to write to the arduino board.
-        If passes a close port message, it will close the port and cease running.
-        :param queue: queue to read messages from
-        """
-
-        while True:
-            message = queue.get()
-            if message == self.CLOSE_PORT:
-                self.close_port()
-                return
-            else:
-                self.write(msg=message)
 
     def close_port(self):
         """
@@ -109,14 +131,10 @@ class Arduino2LightInterface(object):
         self.ser.close()
 
 if __name__ == '__main__':
-    "Example Use Case"
+    '''Example Use Case'''
     ard = Arduino2LightInterface(com_port=10, default_on=True)
-    ard.write(Arduino2LightInterface.BOTH_ON_MSG)
+    ard.turn_both_on()
     time.sleep(2)
-    ard.write(Arduino2LightInterface.BOTH_OFF_MSG)
-    time.sleep(2)
-    ard.write(Arduino2LightInterface.BOTH_ON_MSG)
-    time.sleep(2)
-    ard.write(Arduino2LightInterface.BOTH_OFF_MSG)
+    ard.turn_both_off()
     time.sleep(2)
     ard.close_port()

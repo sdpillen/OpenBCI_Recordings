@@ -169,6 +169,12 @@ class PyCrosshair(object):
                 self.background_width // 2 - msgim_center_x,
                 self.background_height // 2 - msgim_center_y + i * 22))
 
+    @put_call_to_queue
+    def set_text_dictionary_list(self, new_text_dictionary_list):
+        if type(new_text_dictionary_list) is dict():
+            new_text_dictionary_list = [new_text_dictionary_list]
+        self.dictionary_text_list = new_text_dictionary_list
+
     # ----------private methods-----------#
     @staticmethod
     def __clear_events__():
@@ -198,10 +204,7 @@ class PyCrosshair(object):
             self.__draw_shapes__()
             pygame.display.update()
 
-    def __set_text_dictionary_list__(self, new_text_dictionary_list):
-        if type(new_text_dictionary_list) is dict():
-            new_text_dictionary_list = [new_text_dictionary_list]
-        self.dictionary_text_list = new_text_dictionary_list
+
 
     def __draw_shapes__(self):
         """

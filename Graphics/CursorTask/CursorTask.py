@@ -182,6 +182,12 @@ class CursorTask(Crosshair.PyCrosshair):
         self.bottom_color = color
 
     @put_call_to_queue
+    def set_text_dictionary_list(self, new_text_dictionary_list):
+        if type(new_text_dictionary_list) is dict():
+            new_text_dictionary_list = [new_text_dictionary_list]
+        self.text_dictionary_list = new_text_dictionary_list
+
+    @put_call_to_queue
     def set_to_cursor_background_color(self):
         """
         Sets the background to the cursor background color
@@ -580,10 +586,7 @@ class CursorTask(Crosshair.PyCrosshair):
         """
         pygame.event.clear()
 
-    def __set_text_dictionary_list__(self, new_text_dictionary_list):
-        if type(new_text_dictionary_list) is dict():
-            new_text_dictionary_list = [new_text_dictionary_list]
-        self.text_dictionary_list = new_text_dictionary_list
+
 
     def __fix_none_values_in_target_sizes__(self, target_size_left, target_size_right, target_size_top,
                                             target_size_bottom):

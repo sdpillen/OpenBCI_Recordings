@@ -9,11 +9,8 @@ Example:
 
 import pygame
 import sys
-import os
-import Queue
 import PyCrosshair as Crosshair
-from Utility.Decorators import threaded
-from Graphics.Util.Decorator import put_call_to_queue
+from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 
 class CursorTask(Crosshair.PyCrosshair):
@@ -72,19 +69,11 @@ class CursorTask(Crosshair.PyCrosshair):
         """
         super(CursorTask, self).__init__()
 
-        self.event_queue = Queue.Queue()
-        self.screen_width, self.screen_height = screen_size_width, screen_size_height
-        self.text_dictionary_list = [] if text_dictionary_list is None else text_dictionary_list
-
         # Fix our targets (removing all None attributes and replacing with screen height/width.
         self.target_size_left, self.target_size_right, self.target_size_top, self.target_size_bottom = \
             self.__fix_none_values_in_target_sizes__(target_size_left, target_size_right, target_size_top,
                                                      target_size_bottom)
-
-        # Set our window position  (not sure if this commands works on non-windows computers...)
-        os.environ['SDL_VIDEO_WINDOW_POS'] = str(window_x_pos) + "," + str(window_y_pos)
-
-        self.tick_time = tick_time
+        self.crosshair_cross_color = crosshair_cross_color
 
         self.neutral_color = neutral_color
         self.hit_color = hit_color
@@ -99,11 +88,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.top_color = self.neutral_color
         self.bottom_color = self.neutral_color
 
-        self.crosshair_height = crosshair_height
-        self.crosshair_width = crosshair_width
-        self.crosshair_thickness = crosshair_thickness
-        self.crosshair_cross_color = crosshair_cross_color
-
         self.bar_thickness_y = self.screen_width
         self.bar_thickness_x = target_thickness
         self.left_bar_x = 0
@@ -116,7 +100,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.pixels_to_target = screen_size_width / 2 - self.bar_thickness_x
 
         self.top_y, self.bot_y = 0, self.screen_height - self.bar_thickness_y
-        self.cursor_x, self.cursor_y, self.cursor_radius = self.screen_width//2, self.screen_height//2, cursor_radius
         self.reset()
 
         # draw flags
@@ -127,41 +110,8 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_cursor_flag = False
 
         # Default of object is to draw the crosshair first.
-        self.draw_crosshair_flag = False
         self.draw_cursor_flag = show_cursor
 
-        # Init Pygame
-        pygame.init()
-        pygame.mouse.set_visible(show_mouse)
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.NOFRAME)
-
-        self.font = pygame.font.SysFont(font_type, font_size)
-        pygame.event.set_blocked(pygame.MOUSEMOTION)
-
-        # Start Task
-        self.__run_with_queue__()
-
-    @threaded
-    def __run_with_queue__(self):
-        """
-        Runs our game by reading off events off the passed queue. Events should be passed in the form:
-            (event, args).
-        If no args, pass None instead.
-        :param q: Multithread (or multiprocess) object queue to read from.
-        :return: None - runs infinitely
-        """
-        timer = pygame.time.Clock()
-        while True:
-            CursorTask.__clear_events__()
-            try:
-                # take function call out of queue and run it
-                self.event_queue.get()
-            except Queue.Empty:
-                pass
-            CursorTask.__clear_events__()
-            timer.tick(self.tick_time)
-            self.__draw_shapes__()
-            pygame.display.update()
 
     # ----------Following are graphic methods that users call---------- #
 
@@ -180,12 +130,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.right_color = color
         self.top_color = color
         self.bottom_color = color
-
-    @put_call_to_queue
-    def set_text_dictionary_list(self, new_text_dictionary_list):
-        if type(new_text_dictionary_list) is dict():
-            new_text_dictionary_list = [new_text_dictionary_list]
-        self.text_dictionary_list = new_text_dictionary_list
 
     @put_call_to_queue
     def set_to_cursor_background_color(self):
@@ -582,16 +526,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_text()
         CursorTask.__clear_events__()
 
-    @staticmethod
-    def __clear_events__():
-        """
-        Clear all events from our pygame event queue.  Needs to be called to prevent freezing
-        (maybe due to a pygame bug? simply blocking all events doesn't prevent freezing)
-        """
-        pygame.event.clear()
-
-
-
     def __fix_none_values_in_target_sizes__(self, target_size_left, target_size_right, target_size_top,
                                             target_size_bottom):
         """
@@ -623,5 +557,6 @@ class CursorTask(Crosshair.PyCrosshair):
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
 if __name__ == '__main__':
-    ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)})
-    ct.quit()
+    ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}, window_x_pos=-1920, screen_size_width=1680, screen_size_height=1050)
+    ct.show_right_flag(False)
+    ct.show_bottom_flag(True)

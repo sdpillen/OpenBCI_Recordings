@@ -15,8 +15,8 @@ import pygame
 import sys
 import os
 import Queue
-from Utility.Decorators import threaded
-from Graphics.Util.Decorator import put_call_to_queue
+from CCDLUtil.Utility.Decorators import threaded
+from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 
 class PyCrosshair(object):
@@ -48,7 +48,7 @@ class PyCrosshair(object):
 
         # screen size
         self.screen_width, self.screen_height = screen_size_width, screen_size_height
-        self.dictionary_text_list = [] if text_dictionary_list is None else text_dictionary_list
+        self.text_dictionary_list = [] if text_dictionary_list is None else text_dictionary_list
 
         # Set our window position  (not sure if this commands works on non-windows computers...)
         os.environ['SDL_VIDEO_WINDOW_POS'] = str(window_x_pos) + "," + str(window_y_pos)
@@ -84,7 +84,7 @@ class PyCrosshair(object):
         """
         Resets our crosshair -- shows crosshair, changes crosshair to default color and hides all texts,
         """
-        self.dictionary_text_list = []
+        self.text_dictionary_list = []
         self.current_crosshair_cross_color = self.crosshair_cross_color_default
         self.show_crosshair(True)
 
@@ -115,12 +115,12 @@ class PyCrosshair(object):
     @put_call_to_queue
     def draw_text(self):
         """
-        Draws our text contained in dictionary_text_list onscreen.
+        Draws our text contained in text_dictionary_list onscreen.
         :return:
         """
-        if type(self.dictionary_text_list) is not list:
-            self.dictionary_text_list = [self.dictionary_text_list]
-        for text_dict in self.dictionary_text_list:
+        if type(self.text_dictionary_list) is not list:
+            self.text_dictionary_list = [self.text_dictionary_list]
+        for text_dict in self.text_dictionary_list:
             assert type(text_dict) is dict
             color = text_dict['color']
             x, y = text_dict['pos']
@@ -166,14 +166,14 @@ class PyCrosshair(object):
             msgim_center_y //= 2
 
             self.screen.blit(msg_image, (
-                self.background_width // 2 - msgim_center_x,
-                self.background_height // 2 - msgim_center_y + i * 22))
+                self.screen_width// 2 - msgim_center_x,
+                self.screen_height// 2 - msgim_center_y + i * 22))
 
     @put_call_to_queue
     def set_text_dictionary_list(self, new_text_dictionary_list):
         if type(new_text_dictionary_list) is dict():
             new_text_dictionary_list = [new_text_dictionary_list]
-        self.dictionary_text_list = new_text_dictionary_list
+        self.text_dictionary_list = new_text_dictionary_list
 
     # ----------private methods-----------#
     @staticmethod
@@ -203,8 +203,6 @@ class PyCrosshair(object):
             timer.tick(self.tick_time)
             self.__draw_shapes__()
             pygame.display.update()
-
-
 
     def __draw_shapes__(self):
         """

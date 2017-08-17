@@ -2,79 +2,28 @@
 
 ## Introduction
 
-This is a library initially set up by Darby Losey (loseydm@uw.edu) for the use in the creating and 
-analysis of noninvasive BCI (EEG and TMS) experiments.  This module contains scripts
-ranging from experimental setup to data analysis.
-
-It is important that all code committed to this repository is:
-
-    1) Heavily commented, such that it a function can be understood someone without reading the code. At minimum, 
-           please provide docstrings (comments detailing what a function does) to every funtions written, no matter how basic.
-    2) Well maintained - please only commit code that is predominantly PEP8 complient
-           See https://www.python.org/dev/peps/pep-0008/ for details
-           If commiting uncompleted or untested code, please mark it with a todo comment.
-    3) Generalizeable enough that it can be used for multiple projects.
-            Please do not hard code constants. Instead pass them to the funcion as a default parameter.
-            Please refactor functions that "do too much work".
-    4) Please include detailed commit messages when pushing code.
-            Please do not commit unversionalbe items (such as .pyc files).
-            Please see https://help.github.com/articles/ignoring-files/ if you are unsure how to do this.  A basic .gitignore file is included in this repo.
-            
+This is the newest version branch of CCDLUtil, set up by Nolan Strait (nlstrait@cs) and Linxing Preston Jiang (prestonj@cs).
+This branch contains both the refactored version of code from master branch and the newly added functionality.
 
 ## Instructions for use
 
-This is intended as a general library.  If using, please clone into your site-packages folder (if using Windows; an example path
-C:\Python27\Lib\site_packages), or another folder that is in your working path.
+This is intended as a general library.  If using, please clone into your site-packages folder. Example paths are:
+-Windows: C:\Python27\Lib\site_packages
+-OS X/Linux: ~/.local/lib/python2.7/site-packages
 
-I renamed this project from DLUtil to CCDLUtil.  If cloning from gitlab, you may
-need to rename the folder it clones into (from DLUtil -> CCDLUtil) for imports
+If cloning from gitlab, you may need to rename the folder it clones into (DLUtil -> CCDLUtil) for imports
 to work properly.
-
-## Recommendations for Getting Started
-
-
-##### Multithreading/multiprocessing:
-
-This module (and nearly all complex programs) require multithreading/multiprocessing.
-
-Here is a link to the api for threading:
-https://docs.python.org/2/library/threading.html
-
-Here is a quick intro to multithreading:
-https://pymotw.com/2/threading/
-
-Here is a link to the api for multiprocessing (this is intended to have
-the same face as the threading module, but different 'under the hood'
-characteristics -- use a multiprocessing.queue() for
-communicating between processes):
-https://docs.python.org/2/library/multiprocessing.html
-
-
-##### Communication between threads:
-Here is a link for using queues to communicate between threads/processes
-https://docs.python.org/2/library/queue.html
-
-##### Anonymous functions:
-This module also abuses anonymous functions. Read more here:
-http://www.secnetix.de/olli/Python/lambda_functions.hawk
-
-## Additional Documentation
-           
-Please include descriptions of any new modules you create in readme files.
-
-Additional documentation is available in the CCDL/Documentation folder.
 
 ## Dependencies
 Runs with python 2.7.  Some modules many not require all dependencies. 
-
-    numpy
-    scikit-learn
-    wxpython
-    pygame
-    scipy
-    ast
-    pyaml
-    json
+-numpy
+-scikit-learn
+-wxpython
+-pygame
+-scipy
+-ast
+-pyaml
+-json
 
 ## Suggested Data Formats
 
@@ -83,7 +32,7 @@ Runs with python 2.7.  Some modules many not require all dependencies.
 As a standard convention used in this library, all epoched data is saved in the form (epoch, sample, channel).
 All unepoched data is saved (sample, channel)
 
-### Log Files
+#### Log Files
 
 It may be helpful to save events to file in the form: str(trial_dictionary) + \n, with the dictionary containing information relating to a single trial.
 Most files have a 1st line that contains meta information.
@@ -96,22 +45,8 @@ Because data is saved in this format, each file can be parsed as such:
 Where trial_dictionary is a python dictionary with keys such as 'start_time', which contain relevant info pertaining to that trial.
 This reduces the need to write scripts to parse individual log files.
 
-## Common Code
-
-If there is code that is commonly used, please include it here.
-
-##### Assert Statements:
-    import CCDLUtil.Utility.AssertVal as AV
-
-##### Pickle Files
-
-To load pickle files, call:
-
-    import CCDLUtil.DataManagement.FileParser as FP
-    FP.load_pickle_file(pickle_file_path)
-
-#### Git
-###### How to make git ignore about previously tracked file that are added to .gitignore:
+## Git
+#### How to make git ignore about previously tracked file that are added to .gitignore:
 
 
      git rm --cached -r .

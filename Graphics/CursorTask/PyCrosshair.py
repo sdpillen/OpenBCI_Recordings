@@ -5,7 +5,7 @@ Displays a crosshair using pygame.
 Crosshairs and blank screen #
 #############################
 To show the crosshair, call:
-    show_crosshair(True)
+    show_crosshair()
 
 To show a blank screen, call:
     show_blank
@@ -86,26 +86,24 @@ class PyCrosshair(object):
         """
         self.text_dictionary_list = []
         self.current_crosshair_cross_color = self.crosshair_cross_color_default
-        self.show_crosshair(True)
+        self.show_crosshair()
 
     @put_call_to_queue
-    def quit(self):
-        """
-        Quits pygame and exits (via sys.exit)
-        """
-        pygame.quit()
-        sys.exit(0)
-
-    @put_call_to_queue
-    def show_crosshair(self, b):
+    def show_crosshair(self):
         """
         Shows the crosshair
-        :return:
         """
-        self.draw_crosshair_flag = b
+        self.draw_crosshair_flag = True
 
     @put_call_to_queue
-    def set_crosshairs_color(self, color):
+    def hide_crosshair(self):
+        """
+        Hide the crosshair
+        """
+        self.draw_crosshair_flag = False
+
+    @put_call_to_queue
+    def set_crosshairs_color(self, color=(255, 255, 255)):
         """
         Sets the crosshair color to color.
         :param color: RGB (tuple) color.  Defaults to white.
@@ -174,6 +172,14 @@ class PyCrosshair(object):
         if type(new_text_dictionary_list) is dict():
             new_text_dictionary_list = [new_text_dictionary_list]
         self.text_dictionary_list = new_text_dictionary_list
+
+    @put_call_to_queue
+    def quit(self):
+        """
+        Quits pygame and exits (via sys.exit)
+        """
+        pygame.quit()
+        sys.exit(0)
 
     # ----------private methods-----------#
     @staticmethod
@@ -255,4 +261,4 @@ class PyCrosshair(object):
 
 if __name__ == '__main__':
     ch = PyCrosshair()
-    ch.show_crosshair(True)
+    ch.show_crosshair()

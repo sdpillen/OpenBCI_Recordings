@@ -8,7 +8,6 @@ Example:
 """
 
 import pygame
-import sys
 import PyCrosshair as Crosshair
 from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
@@ -112,7 +111,6 @@ class CursorTask(Crosshair.PyCrosshair):
         # Default of object is to draw the crosshair first.
         self.draw_cursor_flag = show_cursor
 
-
     # ----------Following are graphic methods that users call---------- #
 
     @put_call_to_queue
@@ -148,14 +146,6 @@ class CursorTask(Crosshair.PyCrosshair):
         Sets the background to the cursor background color
         """
         self.background_color_key = self.CROSSHAIR_BKGRND
-
-    @put_call_to_queue
-    def quit(self):
-        """
-        Quits pygame and exits (via sys.exit)
-        """
-        pygame.quit()
-        sys.exit(0)
 
     @put_call_to_queue
     def set_cursor_x_coord(self, new_x_position):
@@ -293,14 +283,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.uncollide_bottom(color)
 
     @put_call_to_queue
-    def show_crosshair(self, b):
-        """
-        Shows the crosshair
-        :return:
-        """
-        self.draw_crosshair_flag = b
-
-    @put_call_to_queue
     def show_cursor(self):
         """
         Shows the cursor
@@ -316,73 +298,104 @@ class CursorTask(Crosshair.PyCrosshair):
         """
         Sets the screen blank, hiding everything
         """
-        self.show_cursor(False)
+        self.hide_cursor()
         self.show_all_flags(False)
-        self.show_crosshair(False)
+        self.hide_crosshair()
 
     @put_call_to_queue
     def hide_all_cursor_task_related_items(self):
-        self.show_cursor(False)
+        self.hide_cursor()
         self.show_all_flags(False)
 
     @put_call_to_queue
-    def show_left_flag(self, b):
+    def show_left_flag(self):
         """
-        B is a bool.  If b, then we show the left flag. Else we hide it.
-        :param b: Bool - show the flag or not
         """
-        self.draw_left_flag = b
+        self.draw_left_flag = True
 
     @put_call_to_queue
-    def show_right_flag(self, b):
+    def hide_left_flag(self):
         """
-        B is a bool.  If b, then we show the right flag. Else we hide it.
-        :param b: Bool - show the flag or not
         """
-        self.draw_right_flag = b
+        self.draw_left_flag = False
 
     @put_call_to_queue
-    def show_top_flag(self, b):
+    def show_right_flag(self):
         """
-        B is a bool.  If b, then we show the top flag. Else we hide it.
-        :param b: Bool - show the flag or not
         """
-        self.draw_top_flag = b
+        self.draw_right_flag = True
 
     @put_call_to_queue
-    def show_bottom_flag(self, b):
+    def hide_right_flag(self):
         """
-        B is a bool.  If b, then we show the bottom flag. Else we hide it.
-        :param b: Bool - show the flag or not
         """
-        self.draw_bottom_flag = b
+        self.draw_right_flag = False
 
     @put_call_to_queue
-    def show_lr_flags(self, b):
+    def show_top_flag(self):
         """
-        If b, shows left and right flags.  Else hides left and right flags.
-        :param b: bool
         """
-        self.show_left_flag(b)
-        self.show_right_flag(b)
+        self.draw_top_flag = True
 
     @put_call_to_queue
-    def show_tb_flags(self, b):
+    def hide_top_flag(self):
         """
-        If b, shows top and bottom flags.  Else hides top and bottom flags.
-        :param b: bool
         """
-        self.show_top_flag(b)
-        self.show_bottom_flag(b)
+        self.draw_top_flag = False
 
     @put_call_to_queue
-    def show_all_flags(self, b):
+    def show_bottom_flag(self):
         """
-        Shows all flags (top, bottom, left and right) if b, else hides them all
-        :param b: bool
         """
-        self.show_lr_flags(b)
-        self.show_tb_flags(b)
+        self.draw_bottom_flag = True
+
+    @put_call_to_queue
+    def hide_bottom_flag(self):
+        """
+        """
+        self.draw_bottom_flag = False
+
+    @put_call_to_queue
+    def show_lr_flags(self):
+        """
+        """
+        self.show_left_flag()
+        self.show_right_flag()
+
+    @put_call_to_queue
+    def hide_lr_flags(self):
+        """
+        """
+        self.hide_left_flag()
+        self.hide_right_flag()
+
+    @put_call_to_queue
+    def show_tb_flags(self):
+        """
+        """
+        self.show_top_flag()
+        self.show_bottom_flag()
+
+    @put_call_to_queue
+    def hide_tb_flags(self):
+        """
+        """
+        self.hide_top_flag()
+        self.hide_bottom_flag()
+
+    @put_call_to_queue
+    def show_all_flags(self):
+        """
+        """
+        self.show_lr_flags()
+        self.show_tb_flags()
+
+    @put_call_to_queue
+    def hide_all_flags(self):
+        """
+        """
+        self.hide_lr_flags()
+        self.hide_tb_flags()
 
     @put_call_to_queue
     def reset_cursor_to_center(self):
@@ -392,7 +405,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.set_cursor_x_coord(int(self.screen_width) // 2)
         self.set_cursor_y_coord(int(self.screen_height) // 2)
 
-
     @put_call_to_queue
     def show_only_crosshairs_with_ch_background(self):
         """
@@ -400,7 +412,7 @@ class CursorTask(Crosshair.PyCrosshair):
         """
         self.hide_all()
         self.set_to_crosshair_background_color()
-        self.show_crosshair(True)
+        self.show_crosshair()
 
     @put_call_to_queue
     def show_only_lrtb_flags_with_cursor_background(self, lrtb_lst, show_cursor=False):
@@ -416,23 +428,15 @@ class CursorTask(Crosshair.PyCrosshair):
         self.set_to_cursor_background_color()
         lrtb_lst = set([xx.lower() for xx in lrtb_lst])
         if 'l' in lrtb_lst:
-            self.show_left_flag(True)
+            self.show_left_flag()
         if 'r' in lrtb_lst:
-            self.show_right_flag(True)
+            self.show_right_flag()
         if 't' in lrtb_lst:
-            self.show_top_flag(True)
+            self.show_top_flag()
         if 'b' in lrtb_lst:
-            self.show_bottom_flag(True)
+            self.show_bottom_flag()
         if show_cursor:
-            self.show_cursor(True)
-
-    @put_call_to_queue
-    def set_crosshairs_color_for_flash(self, color=(255, 255, 255)):
-        """
-        Sets the crosshair color to color.
-        :param color: RGB (tuple) color.  Defaults to white.
-        """
-        self.crosshair_cross_color = color
+            self.show_cursor()
 
     @put_call_to_queue
     def draw_text(self):
@@ -558,5 +562,5 @@ class CursorTask(Crosshair.PyCrosshair):
 
 if __name__ == '__main__':
     ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}, window_x_pos=-1920, screen_size_width=1680, screen_size_height=1050)
-    ct.show_right_flag(False)
-    ct.show_bottom_flag(True)
+    ct.show_right_flag()
+    ct.show_bottom_flag()

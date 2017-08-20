@@ -28,13 +28,14 @@ class CursorTask(Crosshair.PyCrosshair):
     # Text Commands
     SET_TEXT_DICTIONARY_LIST = 'dictionary_text_list'
 
-    def __init__(self, screen_size_width=1920, screen_size_height=1080, neutral_color=(0, 176, 80),
-                 hit_color=(255, 204, 0), crosshair_background_color=(128, 128, 128),
-                 cursor_task_background_color=(0, 0, 0), window_x_pos=-1920, window_y_pos=0, target_thickness=200,
-                 cursor_radius=60, font_size=60, font_type="Verdana", crosshair_cross_color=(255, 255, 255),
-                 show_cursor=False, show_mouse=False, tick_time=10, crosshair_height=30, crosshair_width=30,
-                 crosshair_thickness=8, target_size_left=(200, None), target_size_right=(200, None),
-                 target_size_top=(None, 100), target_size_bottom=(None, 100), text_dictionary_list=None):
+    def __init__(self, screen_size_width=1920, screen_size_height=1080, crosshair_background_color=(128, 128, 128),
+                 window_x_pos=-1920, window_y_pos=0, target_thickness=200, cursor_radius=60, font_size=60,
+                 font_type="Verdana", rest_crosshair_cross_color=(255, 255, 255),
+                 flash_crosshair_cross_color=(255, 0, 0), show_mouse=False, tick_time=10, crosshair_height=60,
+                 crosshair_width=60, crosshair_thickness=8, text_dictionary_list=None,
+                 show_cursor=False, target_size_left=(200, None), target_size_right=(200, None),
+                 target_size_top=(None, 100), target_size_bottom=(None, 100), neutral_color=(0, 176, 80),
+                 hit_color=(255, 204, 0), cursor_task_background_color=(0, 0, 0)):
         """
         Defaults to drawing the crosshair first.
 
@@ -66,13 +67,20 @@ class CursorTask(Crosshair.PyCrosshair):
         :param target_size_bottom: the size of the bottom target.  If first dimension is None, we'll set it to the size
                                    of the screen width.  Second dimension cannot be none. Defaults to (None, 100)
         """
-        super(CursorTask, self).__init__()
+        super(CursorTask, self).__init__(
+            screen_size_width=screen_size_width, screen_size_height=screen_size_height,
+            background_color=crosshair_background_color, window_x_pos=window_x_pos, window_y_pos=window_y_pos,
+            cursor_radius=cursor_radius, font_size=font_size, font_type=font_type,
+            rest_crosshair_cross_color=rest_crosshair_cross_color,
+            flash_crosshair_cross_color=flash_crosshair_cross_color, show_mouse=show_mouse, tick_time=tick_time,
+            crosshair_height=crosshair_height, crosshair_width=crosshair_width, crosshair_thickness=crosshair_thickness,
+            text_dictionary_list=text_dictionary_list)
 
         # Fix our targets (removing all None attributes and replacing with screen height/width.
         self.target_size_left, self.target_size_right, self.target_size_top, self.target_size_bottom = \
             self.__fix_none_values_in_target_sizes__(target_size_left, target_size_right, target_size_top,
                                                      target_size_bottom)
-        self.crosshair_cross_color = crosshair_cross_color
+        self.crosshair_cross_color = rest_crosshair_cross_color
 
         self.neutral_color = neutral_color
         self.hit_color = hit_color
@@ -408,7 +416,7 @@ class CursorTask(Crosshair.PyCrosshair):
     @put_call_to_queue
     def show_only_crosshairs_with_ch_background(self):
         """
-        Shows only the crosshairs, chaning the background color to our background crosshair color
+        Shows only the crosshairs, changing the background color to our background crosshair color
         """
         self.hide_all()
         self.set_to_crosshair_background_color()
@@ -561,6 +569,7 @@ class CursorTask(Crosshair.PyCrosshair):
         return target_size_left, target_size_right, target_size_top, target_size_bottom
 
 if __name__ == '__main__':
-    ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)}, window_x_pos=-1920, screen_size_width=1680, screen_size_height=1050)
+    ct = CursorTask(text_dictionary_list={'text': 'Cat', 'pos': (None, 200), 'color': (255, 200, 255)},
+                    window_x_pos=-1920, screen_size_width=1680, screen_size_height=1050)
     ct.show_right_flag()
     ct.show_bottom_flag()

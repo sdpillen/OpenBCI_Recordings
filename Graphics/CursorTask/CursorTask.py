@@ -78,7 +78,7 @@ class CursorTask(Crosshair.PyCrosshair):
 
         # Fix our targets (removing all None attributes and replacing with screen height/width.
         self.target_size_left, self.target_size_right, self.target_size_top, self.target_size_bottom = \
-            self.__fix_none_values_in_target_sizes__(target_size_left, target_size_right, target_size_top,
+            self._fix_none_values_in_target_sizes(target_size_left, target_size_right, target_size_top,
                                                      target_size_bottom)
         self.crosshair_cross_color = rest_crosshair_cross_color
 
@@ -454,7 +454,7 @@ class CursorTask(Crosshair.PyCrosshair):
                 x, y = text_dict['pos']
                 text = text_dict['text']
                 if x is None or y is None:
-                    center_x, center_y = self.__get_coords_for_message_center__(text)
+                    center_x, center_y = self._get_coords_for_message_center(text)
                     x = center_x if x is None else x
                     y = center_y if y is None else y
                 answer_txt = self.font.render(text, False, color)
@@ -466,16 +466,16 @@ class CursorTask(Crosshair.PyCrosshair):
             x, y = text_dict['pos']
             text = text_dict['text']
             if x is None or y is None:
-                center_x, center_y = self.__get_coords_for_message_center__(text)
+                center_x, center_y = self._get_coords_for_message_center(text)
                 x = center_x if x is None else x
                 y = center_y if y is None else y
 
             answer_txt = self.font.render(text, False, color)
             self.screen.blit(answer_txt, (x, y))
 
-        size_x, size_y = self.__get_message_size__('NO')
+        size_x, size_y = self._get_message_size('NO')
         no_text_location_x = self.screen_width - self.bar_thickness_x // 2 - size_x // 2
-        size_x, size_y = self.__get_message_size__('YES')
+        size_x, size_y = self._get_message_size('YES')
         yes_text_location_x = self.bar_thickness_x // 2 - size_x // 2
 
         answer_txt = self.font.render('YES', False, (0, 0, 0))
@@ -485,7 +485,7 @@ class CursorTask(Crosshair.PyCrosshair):
         self.screen.blit(answer_txt, (no_text_location_x, self.screen_height // 2))
 
     # ----------private methods---------- #
-    def __draw_shapes__(self):
+    def _draw_shapes(self):
         """
         Draws our boards according to how the flags of this class are set.
 
@@ -508,7 +508,7 @@ class CursorTask(Crosshair.PyCrosshair):
                              pygame.Rect((screenwidth_half, screenheight_half - height_half),
                                          (self.crosshair_thickness, self.crosshair_height)))
 
-        CursorTask.__clear_events__()
+        CursorTask._clear_events()
 
         if self.draw_left_flag:
             # Are we drawing the left flag?
@@ -536,9 +536,9 @@ class CursorTask(Crosshair.PyCrosshair):
                                self.cursor_radius)
 
         self.draw_text()
-        CursorTask.__clear_events__()
+        CursorTask._clear_events()
 
-    def __fix_none_values_in_target_sizes__(self, target_size_left, target_size_right, target_size_top,
+    def _fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top,
                                             target_size_bottom):
         """
         top or bottom targets--

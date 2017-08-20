@@ -77,7 +77,7 @@ class PyCrosshair(object):
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
         # run with queue
-        self.__run_with_queue__()
+        self._run_with_queue()
 
     @put_call_to_queue
     def reset_crosshair(self):
@@ -124,7 +124,7 @@ class PyCrosshair(object):
             x, y = text_dict['pos']
             text = text_dict['text']
             if x is None or y is None:
-                center_x, center_y = self.__get_coords_for_message_center__(text)
+                center_x, center_y = self._get_coords_for_message_center(text)
                 x = center_x if x is None else x
                 y = center_y if y is None else y
             answer_txt = self.font.render(text, False, color)
@@ -142,7 +142,7 @@ class PyCrosshair(object):
         :param color: rgb, defaults to white.
         :return:
         """
-        center_x, center_y = self.__get_coords_for_message_center__(text)
+        center_x, center_y = self._get_coords_for_message_center(text)
         x = center_x if x is None else x
         y = center_y if y is None else y
         text = self.font.render(text, False, color)
@@ -183,14 +183,14 @@ class PyCrosshair(object):
 
     # ----------private methods-----------#
     @staticmethod
-    def __clear_events__():
+    def _clear_events():
         """
         Clear all events from our pygame event queue.  Needs to be called to prevent freezing.
         """
         pygame.event.clear()
 
     @threaded
-    def __run_with_queue__(self):
+    def _run_with_queue(self):
         """
         Runs our game by reading off events off the passed queue. Events should be passed in the form:
             (event, args).
@@ -200,17 +200,17 @@ class PyCrosshair(object):
         """
         timer = pygame.time.Clock()
         while True:
-            self.__clear_events__()
+            self._clear_events()
             try:
                 self.event_queue.get()
             except Queue.Empty:
                 pass
-            self.__clear_events__()
+            self._clear_events()
             timer.tick(self.tick_time)
-            self.__draw_shapes__()
+            self._draw_shapes()
             pygame.display.update()
 
-    def __draw_shapes__(self):
+    def _draw_shapes(self):
         """
         Draws our boards according to how the flags of this class are set.
 
@@ -240,18 +240,18 @@ class PyCrosshair(object):
         self.draw_text()
         self.__clear_events__()
 
-    def __get_coords_for_message_center__(self, msg):
+    def _get_coords_for_message_center(self, msg):
         """
         Gets the coordinates for centering the message on screen.
         :param msg: The message to center onscreen
         :return: The x y coords to blit the message to have it be at the center of the screen.
         """
-        size_x, size_y = self.__get_message_size__(msg)
+        size_x, size_y = self._get_message_size(msg)
         center_x = (self.screen_width // 2) - (size_x // 2)
         center_y = (self.screen_height // 2) - (size_y // 2)
         return center_x, center_y
 
-    def __get_message_size__(self, msg):
+    def _get_message_size(self, msg):
         """
         Gets the width and height of our message.
         """

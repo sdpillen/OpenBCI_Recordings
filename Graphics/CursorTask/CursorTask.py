@@ -13,7 +13,6 @@ from CCDLUtil.Graphics.Util.Decorator import put_call_to_queue
 
 
 class CursorTask(Crosshair.PyCrosshair):
-
     """
     This class manages a cursor task graphics.  All logic is abstracted -- this is only for displaying items on screen
     for a cursor task.
@@ -107,7 +106,7 @@ class CursorTask(Crosshair.PyCrosshair):
         self.pixels_to_target = screen_size_width / 2 - self.bar_thickness_x
 
         self.top_y, self.bot_y = 0, self.screen_height - self.bar_thickness_y
-        self.reset()
+        self.reset_cursor()
 
         # draw flags
         self.draw_left_flag = True
@@ -122,7 +121,7 @@ class CursorTask(Crosshair.PyCrosshair):
     # ----------Following are graphic methods that users call---------- #
 
     @put_call_to_queue
-    def reset(self, color=None):
+    def reset_cursor(self, color=None):
         """
         Resets the cursor to the center and returns the flags back to their neutral color (or color if passed value that
         is not None)
@@ -302,20 +301,6 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_cursor_flag = False
 
     @put_call_to_queue
-    def hide_all(self):
-        """
-        Sets the screen blank, hiding everything
-        """
-        self.hide_cursor()
-        self.show_all_flags(False)
-        self.hide_crosshair()
-
-    @put_call_to_queue
-    def hide_all_cursor_task_related_items(self):
-        self.hide_cursor()
-        self.show_all_flags(False)
-
-    @put_call_to_queue
     def show_left_flag(self):
         """
         """
@@ -404,6 +389,24 @@ class CursorTask(Crosshair.PyCrosshair):
         """
         self.hide_lr_flags()
         self.hide_tb_flags()
+
+    @put_call_to_queue
+    def show_all(self):
+        """
+        Sets the screen blank, hiding everything
+        """
+        super(CursorTask, self).show_crosshair()
+        self.show_cursor()
+        self.show_all_flags()
+
+    @put_call_to_queue
+    def hide_all(self):
+        """
+        Sets the screen blank, hiding everything
+        """
+        super(CursorTask, self).hide_crosshair()
+        self.hide_cursor()
+        self.hide_all_flags()
 
     @put_call_to_queue
     def reset_cursor_to_center(self):
@@ -496,18 +499,7 @@ class CursorTask(Crosshair.PyCrosshair):
         # Fill the screen with our current background
         self.screen.fill(self.background_color[self.background_color_key])
 
-        if self.draw_crosshair_flag:
-            height_half = self.crosshair_height // 2
-            width_half = self.crosshair_width // 2
-            screenheight_half = self.screen_height // 2
-            screenwidth_half = self.screen_width // 2
-            pygame.draw.rect(self.screen, self.crosshair_cross_color,
-                             pygame.Rect((screenwidth_half - width_half, screenheight_half),
-                                         (self.crosshair_width, self.crosshair_thickness)))
-            pygame.draw.rect(self.screen, self.crosshair_cross_color,
-                             pygame.Rect((screenwidth_half, screenheight_half - height_half),
-                                         (self.crosshair_thickness, self.crosshair_height)))
-
+        super(CursorTask, self)._draw_shapes()
         CursorTask._clear_events()
 
         if self.draw_left_flag:
@@ -539,7 +531,7 @@ class CursorTask(Crosshair.PyCrosshair):
         CursorTask._clear_events()
 
     def _fix_none_values_in_target_sizes(self, target_size_left, target_size_right, target_size_top,
-                                            target_size_bottom):
+                                         target_size_bottom):
         """
         top or bottom targets--
             If first dimension is None, converts first dimension to the width of the screen if a top or bottom target.

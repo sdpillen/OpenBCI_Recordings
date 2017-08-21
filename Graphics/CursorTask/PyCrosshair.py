@@ -82,7 +82,7 @@ class PyCrosshair(object):
     @put_call_to_queue
     def reset_crosshair(self):
         """
-        Resets our crosshair -- shows crosshair, changes crosshair to default color and hides all texts,
+        Resets our crosshair -- shows crosshair, changes crosshair to default color and hides all texts
         """
         self.text_dictionary_list = []
         self.current_crosshair_cross_color = self.crosshair_cross_color_default
@@ -236,9 +236,9 @@ class PyCrosshair(object):
                              pygame.Rect((screenwidth_half - self.crosshair_thickness // 2, screenheight_half -
                                           height_half), (self.crosshair_thickness, self.crosshair_height)))
 
-        self.__clear_events__()
+        self._clear_events()
         self.draw_text()
-        self.__clear_events__()
+        self._clear_events()
 
     def _get_coords_for_message_center(self, msg):
         """
@@ -262,3 +262,4 @@ class PyCrosshair(object):
 if __name__ == '__main__':
     ch = PyCrosshair()
     ch.show_crosshair()
+    ch.hide_crosshair()

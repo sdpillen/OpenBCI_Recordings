@@ -3,6 +3,8 @@ This files stores all related constants of OpenBCI device
 """
 
 '''About the Device'''
+# name
+NAME = 'open_bci'
 # sampling rate
 FS = 250
 

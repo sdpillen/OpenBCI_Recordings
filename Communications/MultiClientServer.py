@@ -11,7 +11,7 @@ public network connection is disabled)
 import socket
 import sys
 import Queue
-from Utility.Decorators import threaded # for running method in new thread
+from CCDLUtil.Utility.Decorators import threaded # for running method in new thread
 
 
 class TCPServer(object):

@@ -7,7 +7,7 @@ an experiment (not EEG data).
 """
 import CCDLUtil.DataManagement.StringParser as StringParser
 import Queue
-from Utility.Decorators import threaded
+from CCDLUtil.Utility.Decorators import threaded
 
 
 class Log(object):

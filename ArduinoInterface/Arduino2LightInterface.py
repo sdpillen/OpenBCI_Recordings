@@ -10,7 +10,7 @@ loaded on the arduino uno board.
 import Queue
 import serial
 import time
-from Utility.Decorators import threaded
+from CCDLUtil.Utility.Decorators import threaded
 
 
 class Arduino2LightInterface(object):

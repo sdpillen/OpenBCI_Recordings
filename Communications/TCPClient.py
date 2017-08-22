@@ -4,7 +4,7 @@ This class represents a TCP Client which can receive and send messages to a TCP 
 If connection is unsuccessful, be sure to check the firewall settings (especially if Mcafee is installed, check if
 public network connection is disabled)
 """
-from Utility.Decorators import threaded  # for running method in new thread
+from CCDLUtil.Utility.Decorators import threaded  # for running method in new thread
 import socket
 import Queue
 

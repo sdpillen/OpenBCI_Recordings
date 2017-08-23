@@ -423,6 +423,8 @@ class CursorTask(Crosshair.PyCrosshair):
         Sets the screen blank, hiding everything
         """
         super(CursorTask, self).show_crosshair()
+        self.show_yes_flag()
+        self.show_no_flag()
         self.show_cursor()
         self.show_all_flags()
 
@@ -432,6 +434,8 @@ class CursorTask(Crosshair.PyCrosshair):
         Sets the screen blank, hiding everything
         """
         super(CursorTask, self).hide_crosshair()
+        self.hide_yes_flag()
+        self.hide_no_flag()
         self.hide_cursor()
         self.hide_all_flags()
 

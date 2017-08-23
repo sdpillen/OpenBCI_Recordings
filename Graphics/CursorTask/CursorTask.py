@@ -115,6 +115,9 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_bottom_flag = False
         self.draw_cursor_flag = False
 
+        self.draw_yes_flag = True
+        self.draw_no_flag = True
+
         # Default of object is to draw the crosshair first.
         self.draw_cursor_flag = show_cursor
 
@@ -349,6 +352,30 @@ class CursorTask(Crosshair.PyCrosshair):
         self.draw_bottom_flag = False
 
     @put_call_to_queue
+    def show_yes_flag(self):
+        """
+        """
+        self.draw_yes_flag = True
+
+    @put_call_to_queue
+    def hide_yes_flag(self):
+        """
+        """
+        self.draw_yes_flag = False
+
+    @put_call_to_queue
+    def show_no_flag(self):
+        """
+        """
+        self.draw_no_flag = True
+
+    @put_call_to_queue
+    def hide_no_flag(self):
+        """
+        """
+        self.draw_no_flag = False
+
+    @put_call_to_queue
     def show_lr_flags(self):
         """
         """
@@ -482,10 +509,12 @@ class CursorTask(Crosshair.PyCrosshair):
         yes_text_location_x = self.bar_thickness_x // 2 - size_x // 2
 
         answer_txt = self.font.render('YES', False, (0, 0, 0))
-        self.screen.blit(answer_txt, (yes_text_location_x, self.screen_height // 2))
+        if self.draw_yes_flag:
+            self.screen.blit(answer_txt, (yes_text_location_x, self.screen_height // 2))
 
         answer_txt = self.font.render('NO', False, (0, 0, 0))
-        self.screen.blit(answer_txt, (no_text_location_x, self.screen_height // 2))
+        if self.draw_no_flag:
+            self.screen.blit(answer_txt, (no_text_location_x, self.screen_height // 2))
 
     # ----------private methods---------- #
     def _draw_shapes(self):

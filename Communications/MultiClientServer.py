@@ -96,3 +96,21 @@ class TCPServer(object):
             # create threads for send/receive of this client
             self.__start_receive_from_queue__(client_addr)
             self.__start_send_to_queue__(client_addr)
+
+
+# TESTING
+if __name__ == '__main__':
+    # create server
+    server = TCPServer(port=9999)
+
+    while True:
+        clients = server.clients.keys()
+        if server.num_conns() > 0:
+            msg = raw_input("Give an input: ")
+            # server.send_msg('69.91.187.216', msg)
+            for client in clients:
+                server.send_msg(client, msg)
+            print msg, "sent"
+            for client in clients:
+                server.receive_msg(client)
+            print msg, "received"

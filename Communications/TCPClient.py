@@ -68,3 +68,13 @@ class TCPClient(object):
             if self.verbose: print "Sending", message_to_send
             Util.send_msg(self.TCPSock, message_to_send)
             # self.TCPSock.send(message_to_send)
+
+# TESTING
+if __name__ == '__main__':
+    client = TCPClient(server_ip='69.91.185.63', port=9999)
+    print "Connection with server successful!"
+
+    while True:
+        msg = str(client.receive_message())
+        msg += "?!?!?!?!"
+        client.send_message(msg)

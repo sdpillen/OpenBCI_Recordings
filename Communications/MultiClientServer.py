@@ -50,6 +50,9 @@ class TCPServer(object):
     def num_conns(self):
         return len(self.clients.keys())
 
+    def is_connected_with(self, client):
+        return client in self.clients
+
     @threaded
     def __start_receive_from_queue__(self, client):
         while True:

@@ -9,6 +9,7 @@ import socket
 import Queue
 import Util
 
+
 class TCPClient(object):
 
     def __init__(self, server_ip, port, buf=1024, verbose=True):
@@ -76,5 +77,6 @@ if __name__ == '__main__':
 
     while True:
         msg = str(client.receive_message())
-        msg += "?!?!?!?!"
+        print "msg len:", len(msg)
+        msg += "?!"
         client.send_message(msg)

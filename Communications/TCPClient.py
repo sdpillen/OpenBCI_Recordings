@@ -53,7 +53,8 @@ class TCPClient(object):
         :return: none
         """
         while True:
-            received_message = self.TCPSock.recv(self.buf)
+            received_message = Util.recv_msg(self.TCPSock)
+            # received_message = self.TCPSock.recv(self.buf)
             if self.verbose: print "Server sends: " + received_message
             self.receive_message_queue.put(received_message)
 
@@ -65,4 +66,5 @@ class TCPClient(object):
         while True:
             message_to_send = str(self.send_message_queue.get())
             if self.verbose: print "Sending", message_to_send
-            self.TCPSock.send(message_to_send)
+            Util.send_msg(self.TCPSock, message_to_send)
+            # self.TCPSock.send(message_to_send)

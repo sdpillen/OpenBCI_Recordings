@@ -11,6 +11,7 @@ public network connection is disabled)
 import socket
 import sys
 import Queue
+import Util
 from CCDLUtil.Utility.Decorators import threaded # for running method in new thread
 
 
@@ -57,7 +58,7 @@ class TCPServer(object):
     def __start_receive_from_queue__(self, client):
         while True:
             conn = self.clients[client][0]
-            message = str(conn.recv(self.buf))
+            message = Util.recv_msg(conn)
             # receive queue
             self.clients[client][1].put(message)
             if self.verbose:
@@ -72,7 +73,7 @@ class TCPServer(object):
             message_to_send = self.clients[client][2].get()
             if self.verbose:
                 print "Sending... ", message_to_send
-            conn.sendall(message_to_send)
+            Util.send_msg(conn, message_to_send)
 
     @threaded
     def __accept_clients__(self):

@@ -72,7 +72,8 @@ class TCPClient(object):
 
 # TESTING
 if __name__ == '__main__':
-    client = TCPClient(server_ip='69.91.185.63', port=9999)
+    # preston: 69.91.185.63
+    client = TCPClient(server_ip='205.175.118.24', port=9999)
     print "Connection with server successful!"
 
     while True:

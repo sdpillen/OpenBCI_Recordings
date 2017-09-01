@@ -3,64 +3,88 @@ Wrapper methods for assertions.
 """
 
 
-def assert_equal(val1, val2):
+def assert_equal(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Runs assertion that everything is equal to each other and display values if assertion fails.
     """
-    assert val1 == val2, 'Error: %s and %s should be EQUAL!' % (str(val1), str(val2))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in args:
+        assert i == args[0], 'Error: %s and %s should be EQUAL!' % (str(i), str(args[0]))
 
 
-def assert_not_equal(val1, val2):
+def assert_not_equal(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Runs assertion that everything is NOT equal to each other and display values if assertion fails.
+
+    Warning: O(n^2) operation!
     """
-    assert val1 != val2, 'Error: %s and %s should NOT be equal!' % (str(val1), str(val2))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in range(len(args)):
+        for j in range (i + 1, len(args)):
+            assert args[i] != args[j], 'Error: %s and %s should NOT be equal!' % (str(args[i]), str(args[j]))
 
 
-def assert_less(val_less, val_greater):
+def assert_less(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Run assertion that everything is STRICTLY sorted from small to large and display values if assert fails
     """
-    assert val_less < val_greater, 'Error: %s should be LESS than %s' % (str(val_less), str(val_greater))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in range(len(args) - 1):
+        assert args[i] < args[i + 1], 'Error: %s should be less than %s!' % (str(args[i]), str(args[i + 1]))
 
 
-def assert_less_or_equal(val_less, val_greater):
+def assert_less_or_equal(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Run assertion that everything is sorted from small to large and display values if assert fails
     """
-    assert val_less <= val_greater, 'Error: %s should be LESS THAN OR EQUAL TO %s' % (str(val_less), str(val_greater))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in range(len(args) - 1):
+        assert args[i] <= args[i + 1], 'Error: %s should be less than or equal to %s' % (str(args[i]), str(args[i + 1]))
 
 
-def assert_greater(val_greater, val_less):
+def assert_greater(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Run assertion that everything is STRICTLY sorted from large to small and display values if assert fails
     """
-    assert val_greater > val_less, 'Error: %s should be GREATER than %s' % (str(val_greater), str(val_less))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in range(len(args) - 1):
+        assert args[i] > args[i + 1], 'Error: %s should be greater than %s!' % (str(args[i]), str(args[i + 1]))
 
 
-def assert_greater_or_equal(val_greater, val_less):
+def assert_greater_or_equal(*args):
     """
-    Runs assertion and displays values if assertion fails.
+    Run assertion that everything is sorted from large to small and display values if assert fails
     """
-    assert val_greater >= val_less, 'Error: %s should be GREATER THAN OR EQUAL TO %s' % (str(val_greater), str(val_less))
+    assert len(args) >= 2, 'Error: there should be at least two parameters!'
+    for i in range(len(args) - 1):
+        assert args[i] >= args[i + 1], 'Error: %s should be greater than or equal to %s' % \
+                                       (str(args[i]), str(args[i + 1]))
 
 
-def assert_epoch_label_shape(epoched_values, labels, message="The number of epochs between the density and labels don't match"):
+def assert_epoch_label_shape(epoched_values, labels,
+                             message="The number of epochs between the density and labels don't match"):
     """
     Asserts that the number of epochs in the density has the same length as the labels
-    :param epoched_values: numpy array - epoched values where the first dimension is the number of epoch (such as density)
+    :param epoched_values: epoched values where the first dimension is the number of epoch (such as density)
     :param labels: labels - list or 1D np array
     :param message: Message to show if assertion fails.
     """
-    assert epoched_values.shape[0] == len(labels), str(message) + '-- Density: %d, Labels: %d' % (epoched_values.shape[0], len(labels))
+    assert epoched_values.shape[0] == len(labels), str(message) + '-- Density: %d, Labels: %d' % \
+                                                                  (epoched_values.shape[0], len(labels))
 
 
-def assert_none(val1, message=''):
+def assert_none(*args):
     """
-    Runs assertion and displays value if assertion fails.
+    Runs assertion that all are None and display value if assertion fails.
     """
-    assert val1 is None , '%s -- %s' % (str(message), str(val1))
+    for i in args:
+        assert i is None, 'Error: %s is not None' % str(i)
 
 
-def assert_type(val1, type, message='Invalid types:'):
-    assert type(val1) is type, message + '%s -- %s is type %s, not type %s' % (str(message), str(val1), type(val1), str(type))
+def assert_type(dtype, *args):
+    """
+    Run assertion that all are type dtype and display value if assertion fails
+    :param dtype: data type
+    """
+    for i in args:
+        assert type(i) is dtype, 'Error: %s has type: %s' % (str(i), type(i))

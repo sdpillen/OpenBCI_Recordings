@@ -120,12 +120,14 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
                 # Data put on the data save queue is a len three tuple.
                 self.data_save_queue.put((None, None, data_str + '\n'))
 
+        print "Wrote to file!"
         # Set our two EEG INDEX parameters.
         CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.EEG_ID_VAL = id_val
 
-    def start_open_bci_streamer(self):
+    @threaded
+    def start_streamer(self):
         """
         Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
 
@@ -134,17 +136,10 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
         board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
         board.start_streaming(self.callback_fn)
 
-    @threaded
-    def start_recording(self):
-        """
-        Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
-        Data is put onto the out_buffer_queue and data_save_queue as according to the initialization of this object.
-        """
-        self.start_open_bci_streamer()
-
 
 if __name__ == '__main__':
-    obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/ttyUSB0/')
-    obs.start_recording()
+
+    obs = OpenBCIStreamer(live=True, save_data=True, port='COM20')
+    obs.start_streamer()
     threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='RestingStateMay24.csv',
                                                                        queue=obs.data_save_queue, header="Sample Header")).start()

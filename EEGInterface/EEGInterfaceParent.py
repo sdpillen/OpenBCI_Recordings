@@ -47,7 +47,8 @@ class EEGInterfaceParent(object):
             self.channels_for_live = self.channels_for_live.lower()
             if self.channels_for_live != 'all':
                 raise ValueError('Invalid channels_for_live parameter')
-        self.data_save_queue = Queue.Queue if save_data else None
+        # create data save queue
+        self.data_save_queue = Queue.Queue() if save_data else None
 
     def trim_channels_with_channel_index_list(self, data, channel_index_list):
         """

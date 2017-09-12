@@ -14,13 +14,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
                  include_aux_in_save_file=True, subject_name=None, subject_tracking_number=None, experiment_number=None,
                  channel_names=None, port=None, baud=115200):
         """
-        A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
-
-        For live data streaming, use with a threading or multiprocessing queue (ie. Queue.queue()
-           Data will be put on the queue, which can be read by another thread.)
-
-        Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
-            Use this to time mark events in your other programs.
+        Inherits from CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParent
 
         :param channels_for_live: List of channel Indexes (Only!! -- channel names has not been implemented for OpenBCI) to put on the out_buffer_queue.
                                     If [], no channels will be put on the out_buffer_queue.
@@ -47,21 +41,10 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
         self.include_aux_in_save_file = include_aux_in_save_file
         self.channels_for_live = channels_for_live
         # Set our port to default if a port isn't passed
-        self.port = OpenBCIStreamer.get_default_port() if port is None else port
+        if port is None:
+            raise ValueError("port cannot be None!")
+        self.port = port
         self.baud = baud
-
-    @staticmethod
-    def get_default_port():
-        """
-        Returns the default port for the current operating system.
-        :return:
-        """
-        if SystemInfo.is_linux():
-            return '/dev/ttyUSB0'
-        elif SystemInfo.is_windows():
-            return 'COM0'
-        else:
-            raise ValueError('Default Port for OS not recognized')
 
     def callback_fn(self, data_packet):
         """
@@ -93,7 +76,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
                 self.out_buffer_queue.put(data)
             elif type(self.channels_for_live) is list:
                 # Get only the indexes contained in the channels for live list.
-                trimmed_data = self.trim_channels_with_channel_index_list(data, self.channels_for_live)
+                trimmed_data = OpenBCIStreamer.trim_channels_with_channel_index_list(data, self.channels_for_live)
                 self.out_buffer_queue.put(trimmed_data)
             else:
                 if self.channels_for_live is not None:
@@ -104,7 +87,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
             if type(self.channels_for_save) is str and self.channels_for_save.lower() == 'all':
                 data_to_put_on_queue = data
             elif type(self.channels_for_live) is list:
-                data_to_put_on_queue = self.trim_channels_with_channel_index_list(data, self.channels_for_save)
+                data_to_put_on_queue = OpenBCIStreamer.trim_channels_with_channel_index_list(data, self.channels_for_save)
             else:
                 if self.channels_for_save is not None:
                     raise ValueError('Invalid channels_for_live value.')
@@ -127,10 +110,9 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
     @threaded
     def start_recording(self):
         """
-        Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
-
-        To keep naming consistant across EEG systems, calling .start_recording provides the same utility.
+        Starts the open BciHwInter streamer. Called in a new thread
         """
+
         board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
         print 'start recording'
         board.start_streaming(self.callback_fn)

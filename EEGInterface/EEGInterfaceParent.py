@@ -19,12 +19,14 @@ class EEGInterfaceParent(object):
         A data collection object for the EEG interface.
         This provides option for live data streaming and saving data to file.
 
-        Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.  These variables can be read from any thread.
-            Use this to time mark events in your other programs.
+        Modifies the EEG_INDEX and EEG_INDEX_2 in CCDLUtil/EEGInterface/EEG_INDEX.py when each packet arrives.
+        These variables can be read from any thread. Use this to time mark events in your other programs.
 
-        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [], no channels will be put on the out_buffer_queue.
-                                  If 'All' (case is ignored), all channels will be placed on the out_buffer_queue.  Defaults to All.
-        
+        :param channels_for_live: List of channel names (or indexes) to put on the out_buffer_queue. If [], no channels
+                    will be put on the out_buffer_queue. If 'All' (case is ignored), all channels will be placed on the
+                    out_buffer_queue.  Defaults to All.
+        :param live: True to create out_buffer_queue. Default to True
+        :param save_data: True to create data_save_queue. Default to True
         :param subject_name: Optional -- Name of the subject. Defaults to 'None'
         :param subject_tracking_number: Optional -- Subject Tracking Number (AKA TMS group experiment number tracker). Defaults to 'None'
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
@@ -50,7 +52,8 @@ class EEGInterfaceParent(object):
         # create data save queue
         self.data_save_queue = Queue.Queue() if save_data else None
 
-    def trim_channels_with_channel_index_list(self, data, channel_index_list):
+    @staticmethod
+    def trim_channels_with_channel_index_list(data, channel_index_list):
         """
         Saves data[i] where i is an element in channel_index_list.
         For example:

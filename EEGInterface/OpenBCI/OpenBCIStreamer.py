@@ -2,7 +2,6 @@ import OpenBCIHardwareInterface as BciHwInter
 import CCDLUtil.Utility.SystemInformation as SystemInfo
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterfaceParent
-import Queue
 import threading
 import CCDLUtil.EEGInterface.EEGDataSaver as EEGDataSaver
 from CCDLUtil.Utility.Decorators import threaded
@@ -120,26 +119,26 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParen
                 # Data put on the data save queue is a len three tuple.
                 self.data_save_queue.put((None, None, data_str + '\n'))
 
-        print "Wrote to file!"
         # Set our two EEG INDEX parameters.
         CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.EEG_ID_VAL = id_val
 
     @threaded
-    def start_streamer(self):
+    def start_recording(self):
         """
         Starts the open BciHwInter streamer. This method streams data infinitely and does not return.
 
         To keep naming consistant across EEG systems, calling .start_recording provides the same utility.
         """
         board = BciHwInter.OpenBCIBoard(port=self.port, baud=self.baud, scaled_output=False, log=True)
+        print 'start recording'
         board.start_streaming(self.callback_fn)
 
 
 if __name__ == '__main__':
 
-    obs = OpenBCIStreamer(live=True, save_data=True, port='COM20')
-    obs.start_streamer()
+    obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/ttyUSB0')
+    obs.start_recording()
     threading.Thread(target=lambda: EEGDataSaver.start_eeg_data_saving(save_data_file_path='RestingStateMay24.csv',
                                                                        queue=obs.data_save_queue, header="Sample Header")).start()

@@ -25,10 +25,10 @@ import struct
 import time
 import Queue
 import threading
-import CCDLUtil.EEGInterface.EEGDataSaver
+import CCDLUtil.EEGInterface.DataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
-import CCDLUtil.EEGInterface.EEGInterfaceParent
+import CCDLUtil.EEGInterface.EEGInterface
 import csv
 
 
@@ -42,7 +42,7 @@ class Marker:
         self.description = ""
 
 
-class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
+class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
     """
     A Parent interface that should be inherited other systems that interface with EEG.

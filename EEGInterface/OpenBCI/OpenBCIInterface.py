@@ -1,14 +1,14 @@
 import OpenBCIHardwareInterface as BciHwInter
 import CCDLUtil.Utility.SystemInformation as SystemInfo
 import CCDLUtil.EEGInterface.EEG_INDEX
-import CCDLUtil.EEGInterface.EEGInterfaceParent
+import CCDLUtil.EEGInterface.EEGInterface
 import threading
-import CCDLUtil.EEGInterface.EEGDataSaver as EEGDataSaver
+import CCDLUtil.EEGInterface.DataSaver as EEGDataSaver
 from CCDLUtil.Utility.Decorators import threaded
 import time
 
 
-class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfaceParent):
+class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
     def __init__(self, channels_for_live='All', channels_for_save='All', live=True, save_data=True,
                  include_aux_in_save_file=True, subject_name=None, subject_tracking_number=None, experiment_number=None,

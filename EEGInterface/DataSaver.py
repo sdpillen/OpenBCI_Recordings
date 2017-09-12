@@ -3,15 +3,15 @@ This file is for saving EEG Data
 """
 
 import CCDLUtil.DataManagement.StringParser as StringParser
+from CCDLUtil.Utility.Decorators import threaded
 import time
 import sys
 import Queue
 
-def start_eeg_data_saving(save_data_file_path, queue, header=None, timeout=15):
+
+@threaded
+def start_saving_data(save_data_file_path, queue, header=None, timeout=15):
     """
-
-    This function is called from the BrainAmpInterface.
-
     A function to be called in a new thread whose sole purpose is to save eeg data to disk.
     :param save_data_file_path: A string - The full file name to save the data (for example './data/subjectX.csv').
     :param queue: The queue to read the data from.

@@ -48,7 +48,8 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
     A Parent interface that should be inherited other systems that interface with EEG.
     """
 
-    def __init__(self, channels_for_live, out_buffer_queue, data_save_queue=None, subject_name=None, subject_tracking_number=None, experiment_number=None):
+    def __init__(self, channels_for_live, live=True, save_data=True, subject_name=None, subject_tracking_number=None,
+                 experiment_number=None):
         """
         A data collection object for the EEG interface.  This provides option for live data streaming and saving data to file.
 
@@ -73,8 +74,9 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
         :param experiment_number: Optional -- Experimental number. Defaults to 'None'
         """
         # Call our EEGInterfaceParent init method.
-        super(BrainAmpStreamer, self).__init__(channels_for_live=channels_for_live, out_buffer_queue=out_buffer_queue, data_save_queue=data_save_queue, subject_name=subject_name,
-                                               subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
+        super(BrainAmpStreamer, self).__init__(
+            channels_for_live=channels_for_live, live=live, save_data=save_data, subject_name=subject_name,
+            subject_tracking_number=subject_tracking_number, experiment_number=experiment_number)
         # Create a tcpip socket
         self.con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect to recorder host via 32Bit RDA-port
@@ -215,7 +217,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
                     self.data_save_queue.put((None, None, save_string))
 
                 # The data put on the out buffer queue is downsamled to 500 Hz.
-                if self.put_data_on_out_queue_flag:
+                if self.live:
                     self.handle_out_buffer_queue(data, resolutions, channel_count, channel_dict)
 
             elif msgtype == 3:
@@ -254,7 +256,6 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterfaceParent.EEGInterfacePare
             channel_data = [data[index * 32 + ii] * resolution for index in indexes_needed]
             channels[:, ii] = np.asarray(channel_data)
         return channels
-
 
     def handle_out_buffer_queue(self, data, resolutions, channel_count, channel_dict):
         """

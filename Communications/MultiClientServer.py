@@ -33,6 +33,8 @@ class TCPServer(object):
         except socket.error:
             print "Error: could not create socket!"
             sys.exit(0)
+        # allow address reuse
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # bind
         self.socket.bind(self.addr)
         self.socket.listen(3)

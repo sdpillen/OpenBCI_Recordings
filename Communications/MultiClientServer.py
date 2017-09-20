@@ -12,6 +12,7 @@ import socket
 import sys
 import Queue
 import Util
+from CCDLUtil.Utility.VerboseInfo import verbose_info
 from CCDLUtil.Utility.Decorators import threaded # for running method in new thread
 
 
@@ -38,7 +39,7 @@ class TCPServer(object):
         # bind
         self.socket.bind(self.addr)
         self.socket.listen(3)
-        print "Server established!"
+        verbose_info(verbose, "Server established!")
         # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
         # start accepting

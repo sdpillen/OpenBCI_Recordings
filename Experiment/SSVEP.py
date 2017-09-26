@@ -1,3 +1,4 @@
+import random
 import time
 import numpy as np
 import CCDLUtil.SignalProcessing.Fourier as Fourier
@@ -8,11 +9,11 @@ import CCDLUtil.EEGInterface.OpenBCI.OpenBCIInterface as OpenBCI
 from CCDLUtil.Graphics.CursorTask.CursorTask import CursorTask
 
 # some constants for the SSVEP demo
-STEP = 30
+STEP = 100
 CURSOR_RADIUS = 60
 ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
-EEG_COLLECT_TIME_SECONDS = 15
+EEG_COLLECT_TIME_SECONDS = 30
 WINDOW_SIZE_SECONDS = 2
 EEG = None
 # EEG = Constants.EEGSystemNames.BRAIN_AMP 
@@ -39,7 +40,7 @@ def initialize_graphics(width=1920, height=1080):
     :param height: the height (pixels) of the screen
     :return CursorTask object
     """
-    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=1920) 
+    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=1920)
 
 
 def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_freq, prompt, window_width,
@@ -58,9 +59,13 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
     :param sleep_time_if_not_ran: time to sleep if eeg_system == None
     :return: the answer, stop early or late
     """
+    # start graphics
     cursor_task.show_all()
     cursor_task.hide_tb_flags()
+    cursor_task.hide_crosshair()
     cursor_task.reset_cursor()
+    # set the prompt
+    cursor_task.set_text_dictionary_list({'text': prompt, 'pos': (None, 150), 'color': (255, 0, 0)})
     # graphic related constants
     cursor_x = window_width // 2
     boundary_left = 200
@@ -70,10 +75,10 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
     # If our EEG system is None, we'll sleep for a bit and then return a random result
     if eeg_system is None:
         time.sleep(sleep_time_if_not_ran)
-        steps = 5
+        steps = 10
         packet_index = 0
         while packet_index < steps:
-            x = 1 # random.randint(0, 1)
+            x = random.randint(0, 1)
             # compare densities of 17Hz and 15Hz frequencies
             time.sleep(2)
             if x == 0:
@@ -83,12 +88,14 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
                 cursor_x -= STEP
                 cursor_task.move_cursor_delta_x(-STEP)
             # if we reach left boundary
-            if cursor_x + CURSOR_RADIUS <= boundary_left:
+            if cursor_x - CURSOR_RADIUS <= boundary_left:
                 cursor_task.collide_left()
+                time.sleep(2)
                 return ROTATE, start_time, time.time()
             # right boundary
             if cursor_x + CURSOR_RADIUS >= boundary_right:
                 cursor_task.collide_right()
+                time.sleep(2)
                 return DONT_ROTATE, start_time, time.time()
             packet_index += 1
     else:
@@ -157,9 +164,13 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
         cursor_task.show_crosshair()
         return DONT_ROTATE, start_time, time.time()
 
+
 if __name__ == '__main__':
     eeg = initialize_eeg(None)
     out_buffer_queue = None if eeg is None else eeg.out_buffer_queue
-    cursor_task = initialize_graphics()
+    cursor_task = initialize_graphics(width=1680, height=1050)
+    # some questions
+    prompt_lst = ['Are dogs animals?', 'Do you like cheesecakes?', 'Is beef edible?']
     # start
-    trial_logic(eeg, out_buffer_queue, cursor_task, 250, 17, 15, "move", cursor_task.screen_width)
+    for prompt in prompt_lst:
+        trial_logic(eeg, out_buffer_queue, cursor_task, 500, 17, 15, prompt, cursor_task.screen_width)

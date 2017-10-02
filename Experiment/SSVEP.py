@@ -20,7 +20,8 @@ EEG = None
 
 
 def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
-    """
+    """Initialize eeg interface
+
     :param live_channels: the channels to take live data
     :param subject_name: the name of the subject
     :param openbci_port: the communication with OpenBCI devices 
@@ -35,7 +36,8 @@ def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
 
 
 def initialize_graphics(width=1920, height=1080):
-    """
+    """Initialize graphics
+
     :param width: the width (pixels) of the screen
     :param height: the height (pixels) of the screen
     :return CursorTask object
@@ -45,8 +47,7 @@ def initialize_graphics(width=1920, height=1080):
 
 def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_freq, prompt, window_width,
                 sleep_time_if_not_ran=2):
-    """
-    Run a full trial of SSVEP experiment.
+    """Run a full trial of SSVEP experiment.
 
     :param eeg_system: Used EEG system (or None)
     :param out_buffer_queue: the queue to retrieve live data
@@ -165,12 +166,18 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
         return DONT_ROTATE, start_time, time.time()
 
 
+def build_prompt_lst():
+    """Build a question list for SSVEP task
+    """
+    return ['Are dogs animals?', 'Do you like cheesecakes?', 'Is beef edible?', 'Do you support gun control?']
+
+
 if __name__ == '__main__':
     eeg = initialize_eeg(None)
     out_buffer_queue = None if eeg is None else eeg.out_buffer_queue
     cursor_task = initialize_graphics(width=1680, height=1050)
     # some questions
-    prompt_lst = ['Are dogs animals?', 'Do you like cheesecakes?', 'Is beef edible?']
+    prompt_lst = build_prompt_lst()
     # start
     for prompt in prompt_lst:
         trial_logic(eeg, out_buffer_queue, cursor_task, 500, 17, 15, prompt, cursor_task.screen_width)

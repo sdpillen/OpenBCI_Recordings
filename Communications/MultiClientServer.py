@@ -42,7 +42,7 @@ class TCPServer(object):
         # keep a dictionary whose keys are client_addr and values are type of (connection, receive_queue, send_queue)
         self.clients = dict()
         # start accepting
-        self.__accept_clients__()
+        self._accept_clients()
 
     def receive_msg(self, client):
         return self.clients[client][1].get()
@@ -56,8 +56,8 @@ class TCPServer(object):
     def is_connected_with(self, client):
         return client in self.clients
 
-    @threaded
-    def __start_receive_from_queue__(self, client):
+    @threaded(False)
+    def _start_receive_from_queue(self, client):
         while True:
             conn = self.clients[client][0]
             message = Util.recv_msg(conn)
@@ -68,8 +68,8 @@ class TCPServer(object):
             if message == "exit":
                 self.socket.close()
 
-    @threaded
-    def __start_send_to_queue__(self, client):
+    @threaded(False)
+    def _start_send_to_queue(self, client):
         while True:
             conn = self.clients[client][0]
             message_to_send = self.clients[client][2].get()
@@ -77,8 +77,8 @@ class TCPServer(object):
                 print "Sending... ", message_to_send
             Util.send_msg(conn, message_to_send)
 
-    @threaded
-    def __accept_clients__(self):
+    @threaded(False)
+    def _accept_clients(self):
         """
         Start listening and accepting new clients.
         :return: none
@@ -96,8 +96,8 @@ class TCPServer(object):
             self.clients[client_addr] = (conn, Queue.Queue(), Queue.Queue())
             assert len(self.clients[client_addr]) == 3
             # create threads for send/receive of this client
-            self.__start_receive_from_queue__(client_addr)
-            self.__start_send_to_queue__(client_addr)
+            self._start_receive_from_queue(client_addr)
+            self._start_send_to_queue(client_addr)
 
 
 # TESTING

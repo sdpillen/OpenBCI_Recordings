@@ -24,11 +24,12 @@ import socket
 import struct
 import time
 import Queue
-import threading
 import CCDLUtil.EEGInterface.DataSaver
 import numpy as np
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
+from CCDLUtil.Utility.Decorators import threaded
+from CCDLUtil.EEGInterface.DataSaver import start_saving_data
 import csv
 
 
@@ -139,7 +140,6 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
         return channelCount, samplingInterval, resolutions, channelNames
 
-
     def get_data(self, rawdata, num_channels):
         """
         Helper function for extracting eeg and marker data from a raw data array
@@ -172,6 +172,7 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
             index = index + markersize[0]
         return block, points, markerCount, data, markers
 
+    @threaded(False)
     def start_recording(self):
         """
         Start our recording
@@ -355,6 +356,12 @@ class BrainAmpStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         raw_data = BrainAmpStreamer.recv_data(self.con, msgsize - 24)
         return raw_data, msgsize, msgtype
 
+
 if __name__ == '__main__':
-    dc = BrainAmpStreamer(Queue.Queue(), ['C3', 'C4'], Queue.Queue())
+    # streamer
+    dc = BrainAmpStreamer(['Oz'], live=True, save_data=True)
+    # start
     dc.start_recording()
+    # save
+    dc.start_saving_data('test.csv')
+

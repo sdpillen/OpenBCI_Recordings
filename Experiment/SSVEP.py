@@ -15,8 +15,7 @@ ROTATE = 'rotate'
 DONT_ROTATE = 'dont_rotate'
 EEG_COLLECT_TIME_SECONDS = 30
 WINDOW_SIZE_SECONDS = 2
-EEG = None
-# EEG = Constants.EEGSystemNames.BRAIN_AMP 
+EEG = Constants.EEGSystemNames.BRAIN_AMP
 
 
 def initialize_eeg(live_channels, subject_name='Default', openbci_port=5):
@@ -42,7 +41,7 @@ def initialize_graphics(width=1920, height=1080):
     :param height: the height (pixels) of the screen
     :return CursorTask object
     """
-    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=1920)
+    return CursorTask(screen_size_width=width, screen_size_height=height, window_x_pos=-1920)
 
 
 def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_freq, prompt, window_width,
@@ -69,6 +68,7 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
     cursor_task.set_text_dictionary_list({'text': prompt, 'pos': (None, 150), 'color': (255, 0, 0)})
     # graphic related constants
     cursor_x = window_width // 2
+    print cursor_x
     boundary_left = 200
     boundary_right = window_width - 200
     # mark start time
@@ -141,7 +141,7 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
                     cursor_task.move_cursor_delta_x(STEP)
                 else:
                     cursor_x -= STEP
-                    cursor_task.move_cursor_delta_x(STEP)
+                    cursor_task.move_cursor_delta_x(-STEP)
                 # if we reach left boundary
                 if cursor_x - CURSOR_RADIUS <= boundary_left:
                     cursor_task.collide_left()
@@ -169,13 +169,14 @@ def trial_logic(eeg_system, out_buffer_queue, cursor_task, fs, high_freq, low_fr
 def build_prompt_lst():
     """Build a question list for SSVEP task
     """
-    return ['Are dogs animals?', 'Do you like cheesecakes?', 'Is beef edible?', 'Do you support gun control?']
+    return ['Are dogs animals?', 'Are cheesecakes sweet?', 'Is beef edible?']
 
 
 if __name__ == '__main__':
-    eeg = initialize_eeg(None)
+    eeg = initialize_eeg(['Oz'])
     out_buffer_queue = None if eeg is None else eeg.out_buffer_queue
-    cursor_task = initialize_graphics(width=1680, height=1050)
+    eeg.start_recording()
+    cursor_task = initialize_graphics(width=1920, height=1080)
     # some questions
     prompt_lst = build_prompt_lst()
     # start

@@ -363,5 +363,5 @@ if __name__ == '__main__':
     # start
     dc.start_recording()
     # save
-    start_saving_data('test.csv', queue=dc.data_save_queue)
+    dc.start_saving_data('test.csv')
 

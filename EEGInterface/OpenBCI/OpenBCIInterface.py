@@ -1,7 +1,6 @@
 import OpenBCIHardwareInterface as BciHwInter
 import CCDLUtil.EEGInterface.EEG_INDEX
 import CCDLUtil.EEGInterface.EEGInterface
-import CCDLUtil.EEGInterface.DataSaver as EEGDataSaver
 from CCDLUtil.Utility.Decorators import threaded
 import time
 
@@ -105,7 +104,7 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
         CCDLUtil.EEGInterface.EEG_INDEX.CURR_EEG_INDEX_2 = self.data_index
         CCDLUtil.EEGInterface.EEG_INDEX.EEG_ID_VAL = id_val
 
-    @threaded
+    @threaded(False)
     def start_recording(self):
         """
         Starts the open BciHwInter streamer. Called in a new thread
@@ -118,7 +117,6 @@ class OpenBCIStreamer(CCDLUtil.EEGInterface.EEGInterface.EEGInterfaceParent):
 
 if __name__ == '__main__':
 
-    obs = OpenBCIStreamer(live=True, save_data=True, port='/dev/ttyUSB0/')
+    obs = OpenBCIStreamer(live=True, save_data=True, port='COM10')
     obs.start_recording()
-    EEGDataSaver.start_saving_data(save_data_file_path='RestingStateMay24.csv', queue=obs.data_save_queue,
-                                   header="Sample Header")
+    obs.start_saving_data(save_data_file_path='RestingStateMay24.csv', header="Sample Header")
